@@ -1,0 +1,19 @@
+[package]
+name = "bevy-async-task"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+futures = "0.3"
+# WASM compatible features only!
+tokio = { version = "1", default-features = false, features = [
+  "sync",
+  "macros",
+  "io-util",
+  "rt",
+  "time",
+] }
+async-std = "1.12"
+
+[dev-dependencies]
+futures-timer = "3.0"
