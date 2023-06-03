@@ -1,5 +1,54 @@
+use async_std::future::{timeout, TimeoutError};
 use std::{future::Future, pin::Pin};
 use tokio::sync::oneshot;
+use tokio::time::Duration;
+
+pub struct AsyncTimeoutTask<T>(AsyncTask<Result<T, TimeoutError>>);
+
+impl<T: Send + Sync + 'static> AsyncTimeoutTask<T> {
+    pub fn new<F>(dur: Duration, fut: F) -> Self
+    where
+        F: Future<Output = T> + Send + 'static,
+        F::Output: Send + 'static,
+    {
+        let new_fut = async move { timeout(dur, fut).await };
+        Self(AsyncTask::new(new_fut))
+    }
+
+    /// Block awaiting the task result. Can only be used outside of async contexts.
+    ///
+    /// # Errors
+    /// Returns a timeout error if the timeout was reached
+    ///
+    /// # Panics
+    /// Panics if called within an async context.
+    pub fn blocking_recv(self) -> Result<T, TimeoutError> {
+        let (fut, rx) = self.0.into_parts();
+        futures::executor::block_on(fut);
+        rx.buffer.blocking_recv().unwrap()
+    }
+
+    #[allow(clippy::type_complexity)]
+    #[must_use]
+    pub fn into_parts(
+        self,
+    ) -> (
+        Pin<Box<dyn Future<Output = ()> + Send + 'static>>,
+        AsyncReceiver<Result<T, TimeoutError>>,
+    ) {
+        self.0.into_parts()
+    }
+}
+
+impl<T> AsyncTimeoutTask<T> {
+    /// Poll the current thread waiting for the async result.
+    ///
+    /// # Panics
+    /// Panics if the sender was dropped without sending.
+    pub fn try_recv(&mut self) -> Option<Result<T, TimeoutError>> {
+        self.0.receiver.try_recv()
+    }
+}
 
 pub struct AsyncTask<T> {
     fut: Pin<Box<dyn Future<Output = ()> + Send + 'static>>,
@@ -49,7 +98,7 @@ pub struct AsyncReceiver<T> {
 }
 
 impl<T> AsyncReceiver<T> {
-    /// Block the current thread waiting for the async result.
+    /// Poll the current thread waiting for the async result.
     ///
     /// # Panics
     /// Panics if the sender was dropped without sending.
@@ -64,11 +113,11 @@ impl<T> AsyncReceiver<T> {
 
 #[cfg(test)]
 mod test {
-    use crate::AsyncTask;
-    use futures::{pin_mut, select, FutureExt};
+    use super::*;
+    use async_std::task::sleep;
+    use futures::{pin_mut, FutureExt};
     use futures_timer::Delay;
-    use std::time::Duration;
-    use tokio::sync::oneshot;
+    use tokio::select;
 
     #[tokio::test]
     async fn test_oneshot() {
@@ -116,6 +165,52 @@ mod test {
                 }
             }
             _ = timeout => panic!("timeout")
+        };
+    }
+
+    #[tokio::test]
+    async fn test_timeout_task() {
+        let task = AsyncTimeoutTask::new(Duration::from_millis(1), async move {
+            sleep(Duration::from_millis(100)).await;
+            5
+        });
+        let (fut, mut rx) = task.into_parts();
+
+        assert_eq!(None, rx.try_recv());
+
+        // Spawn
+        tokio::spawn(fut);
+
+        // Wait for response
+        let timeout = Delay::new(Duration::from_millis(5)).fuse();
+        pin_mut!(timeout);
+        select! {
+            _ = timeout => {
+                _ = rx.try_recv().unwrap().unwrap_err();
+            }
+        };
+    }
+
+    #[tokio::test]
+    async fn test_timed_task() {
+        let task = AsyncTimeoutTask::new(Duration::from_millis(100), async move {
+            sleep(Duration::from_millis(1)).await;
+            5
+        });
+        let (fut, mut rx) = task.into_parts();
+
+        assert_eq!(None, rx.try_recv());
+
+        // Spawn
+        tokio::spawn(fut);
+
+        // Wait for response
+        let timeout = Delay::new(Duration::from_millis(5)).fuse();
+        pin_mut!(timeout);
+        select! {
+            _ = timeout => {
+                assert_eq!(5, rx.try_recv().unwrap().unwrap());
+            }
         };
     }
 }
