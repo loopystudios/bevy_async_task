@@ -3,6 +3,8 @@ name = "bevy-async-task"
 version = "0.1.0"
 edition = "2021"
 
+[lib]
+
 [dependencies]
 futures = "0.3"
 # WASM compatible features only!
