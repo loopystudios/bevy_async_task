@@ -1,21 +1,29 @@
 use async_std::task::sleep;
 use bevy::prelude::*;
-use bevy_async_task::AsyncTaskRunner;
+use bevy_async_task::{AsyncTask, AsyncTaskRunner};
 use std::time::Duration;
 
-async fn long_task() -> u32 {
-    sleep(Duration::from_millis(1000)).await;
-    5
+fn system1(mut task_executor: AsyncTaskRunner<u32>) {
+    let result = task_executor.blocking_recv(async {
+        sleep(Duration::from_millis(1000)).await;
+        1
+    });
+    println!("Received {result}");
 }
 
-fn my_system(mut task_executor: AsyncTaskRunner<u32>) {
-    let result = task_executor.blocking_recv(long_task());
+fn system2() {
+    let result = AsyncTask::new(async {
+        sleep(Duration::from_millis(1000)).await;
+        2
+    })
+    .blocking_recv();
     println!("Received {result}");
 }
 
 pub fn main() {
     App::new()
         .add_plugins(MinimalPlugins)
-        .add_system(my_system)
+        .add_system(system1)
+        .add_system(system2)
         .run();
 }
