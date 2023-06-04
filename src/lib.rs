@@ -1,15 +1,65 @@
 use async_std::future::{timeout, TimeoutError};
+use bevy::ecs::system::{ReadOnlySystemParam, SystemMeta, SystemParam};
+use bevy::prelude::*;
+use bevy::utils::synccell::SyncCell;
 use std::{future::Future, pin::Pin};
 use tokio::sync::oneshot;
 use tokio::time::Duration;
+
+pub struct AsyncTaskRunner<'s, T>(pub(crate) &'s mut Option<AsyncTask<T>>);
+
+impl<'s, T> AsyncTaskRunner<'s, T> {
+    pub fn begin(&mut self, task: AsyncTask<T>) {
+        self.0.replace(task);
+    }
+
+    pub fn poll(&mut self) -> AsnycTaskStatus<T> {
+        match self.0.as_mut() {
+            Some(task) => match task.receiver.try_recv() {
+                Some(v) => AsnycTaskStatus::Finished(v),
+                None => AsnycTaskStatus::Pending,
+            },
+            None => AsnycTaskStatus::Idle,
+        }
+    }
+}
+
+// SAFETY: Only accesses internal state locally
+unsafe impl<'s, T: Send + Sync + 'static> ReadOnlySystemParam for AsyncTaskRunner<'s, T> {}
+
+// SAFETY: Only accesses internal state locally
+unsafe impl<'a, T: Send + 'static> SystemParam for AsyncTaskRunner<'a, T> {
+    type State = SyncCell<Option<AsyncTask<T>>>;
+    type Item<'w, 's> = AsyncTaskRunner<'s, T>;
+
+    fn init_state(_world: &mut World, _system_meta: &mut SystemMeta) -> Self::State {
+        SyncCell::new(None)
+    }
+
+    #[inline]
+    unsafe fn get_param<'w, 's>(
+        state: &'s mut Self::State,
+        _system_meta: &SystemMeta,
+        _world: &'w World,
+        _change_tick: u32,
+    ) -> Self::Item<'w, 's> {
+        AsyncTaskRunner(state.get())
+    }
+}
+
+pub enum AsnycTaskStatus<T> {
+    Idle,
+    Pending,
+    Finished(T),
+}
 
 pub struct AsyncTimeoutTask<T>(AsyncTask<Result<T, TimeoutError>>);
 
 impl<T: Send + Sync + 'static> AsyncTimeoutTask<T> {
     pub fn new<F>(dur: Duration, fut: F) -> Self
     where
-        F: Future<Output = T> + Send + 'static,
-        F::Output: Send + 'static,
+        F: Future<Output = T> + Send + Sync + 'static,
+        F::Output: Send + Sync + 'static,
     {
         let new_fut = async move { timeout(dur, fut).await };
         Self(AsyncTask::new(new_fut))
@@ -51,15 +101,15 @@ impl<T> AsyncTimeoutTask<T> {
 }
 
 pub struct AsyncTask<T> {
-    fut: Pin<Box<dyn Future<Output = ()> + Send + 'static>>,
+    fut: Pin<Box<dyn Future<Output = ()> + Send + Sync + 'static>>,
     receiver: AsyncReceiver<T>,
 }
 
 impl<T: Send + Sync + 'static> AsyncTask<T> {
     pub fn new<F>(fut: F) -> Self
     where
-        F: Future<Output = T> + Send + 'static,
-        F::Output: Send + 'static,
+        F: Future<Output = T> + Send + Sync + 'static,
+        F::Output: Send + Sync + 'static,
     {
         let (tx, rx) = oneshot::channel();
         let new_fut = async move {
