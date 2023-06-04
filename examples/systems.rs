@@ -1,6 +1,6 @@
 use async_std::task::sleep;
 use bevy::prelude::*;
-use bevy_async_task::{AsnycTaskStatus, AsyncTaskRunner};
+use bevy_async_task::{AsyncTaskRunner, AsyncTaskStatus};
 use std::time::Duration;
 
 async fn long_task() -> u32 {
@@ -10,14 +10,14 @@ async fn long_task() -> u32 {
 
 fn my_system(mut task_executor: AsyncTaskRunner<u32>) {
     match task_executor.poll() {
-        AsnycTaskStatus::Idle => {
+        AsyncTaskStatus::Idle => {
             task_executor.begin(long_task());
             println!("Started!");
         }
-        AsnycTaskStatus::Pending => {
+        AsyncTaskStatus::Pending => {
             // Waiting...
         }
-        AsnycTaskStatus::Finished(v) => {
+        AsyncTaskStatus::Finished(v) => {
             println!("Received {v}");
         }
     }

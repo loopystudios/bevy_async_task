@@ -7,7 +7,7 @@ use std::{future::Future, pin::Pin};
 use tokio::sync::oneshot;
 use tokio::time::Duration;
 
-/// A task runner which executes `AsyncTask`s in the background.
+/// A task runner which executes [`AsyncTask`]s in the background.
 pub struct AsyncTaskRunner<'s, T>(pub(crate) &'s mut Option<AsyncReceiver<T>>);
 
 impl<'s, T: Send + Sync + 'static> AsyncTaskRunner<'s, T> {
@@ -47,16 +47,16 @@ impl<'s, T: Send + Sync + 'static> AsyncTaskRunner<'s, T> {
     /// Poll the task runner for the current task status. If no task has begun, this will return `Idle`.
     /// Possible returns are `Idle`, `Pending`, or `Finished(T)`.
     #[must_use]
-    pub fn poll(&mut self) -> AsnycTaskStatus<T> {
+    pub fn poll(&mut self) -> AsyncTaskStatus<T> {
         match self.0.as_mut() {
             Some(rx) => match rx.try_recv() {
                 Some(v) => {
                     self.0.take();
-                    AsnycTaskStatus::Finished(v)
+                    AsyncTaskStatus::Finished(v)
                 }
-                None => AsnycTaskStatus::Pending,
+                None => AsyncTaskStatus::Pending,
             },
-            None => AsnycTaskStatus::Idle,
+            None => AsyncTaskStatus::Idle,
         }
     }
 }
@@ -84,13 +84,14 @@ unsafe impl<'a, T: Send + 'static> SystemParam for AsyncTaskRunner<'a, T> {
     }
 }
 
-/// The status of an AsyncTask.
-pub enum AsnycTaskStatus<T> {
+/// The status of an [`AsyncTask`].
+pub enum AsyncTaskStatus<T> {
     Idle,
     Pending,
     Finished(T),
 }
 
+/// An [`AsyncTask`] with a timeout.
 pub struct AsyncTimeoutTask<T>(AsyncTask<Result<T, TimeoutError>>);
 
 impl<T: Send + Sync + 'static> AsyncTimeoutTask<T> {
@@ -139,6 +140,7 @@ impl<T> AsyncTimeoutTask<T> {
     }
 }
 
+/// A task than may be ran by an [`AsyncTaskRunner`], or broken into parts.
 pub struct AsyncTask<T> {
     fut: Pin<Box<dyn Future<Output = ()> + Send + Sync + 'static>>,
     receiver: AsyncReceiver<T>,
