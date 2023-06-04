@@ -4,28 +4,50 @@
 [![crates.io](https://img.shields.io/crates/v/bevy-async-task.svg)](https://crates.io/crates/bevy-async-task)
 [![docs.rs](https://img.shields.io/docsrs/bevy-async-task)](https://docs.rs/bevy-async-task)
 
-This is a small crate that creates ergonomic abstractions to polling async compute tasks in Bevy.
+This is a small crate that creates ergonomic abstractions to polling async compute tasks in the background on Bevy.
 
 Supports both **wasm** and **native**.
 
 ## Usage
 
-Local polling for an async-task:
+Using the task executor, `AsyncTaskRunner<T>`:
 
 ```rust
-let task = AsyncTask::new(async move { 5 });
-// Break the task into a runnable future and a receiver
-let (fut, mut rx) = task.into_parts();
-assert_eq!(None, rx.try_recv());
-// Run the future
-let task_pool = bevy::prelude::AsyncComputeTaskPool::get();
-task_pool.spawn(fut);
-// Receive the result
-while let None = rx.try_recv() {}
-assert_eq!(Some(5), rx.try_recv());
+use async_std::{future::TimeoutError, task::sleep};
+use bevy::prelude::*;
+use bevy_async_task::{AsnycTaskStatus, AsyncTask, AsyncTaskRunner};
+use std::time::Duration;
+
+async fn long_task() -> u32 {
+    sleep(Duration::from_millis(1000)).await;
+    5
+}
+
+fn my_system(mut task_executor: AsyncTaskRunner<u32>) {
+    match task_executor.poll() {
+        AsnycTaskStatus::Idle => {
+            let new_task = AsyncTask::new(long_task());
+            task_executor.begin(new_task);
+            println!("Started!");
+        }
+        AsnycTaskStatus::Pending => {
+            // Waiting...
+        }
+        AsnycTaskStatus::Finished(v) => {
+            println!("Received {v}");
+        }
+    }
+}
+
+pub fn main() {
+    App::new()
+        .add_plugins(MinimalPlugins)
+        .add_system(my_system)
+        .run();
+}
 ```
 
-Polling an async-task:
+Manual, polling an async-task:
 
 ```rust
 let task = AsyncTask::new(async move { 5 });
