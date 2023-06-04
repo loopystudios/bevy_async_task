@@ -7,6 +7,7 @@ use std::{future::Future, pin::Pin};
 use tokio::sync::oneshot;
 use tokio::time::Duration;
 
+/// A task runner which executes `AsyncTask`s in the background.
 pub struct AsyncTaskRunner<'s, T>(pub(crate) &'s mut Option<AsyncReceiver<T>>);
 
 impl<'s, T: Send + Sync + 'static> AsyncTaskRunner<'s, T> {
