@@ -152,6 +152,15 @@ impl<T: Send + Sync + 'static> AsyncTask<T> {
     }
 }
 
+impl<T> From<AsyncTimeoutTask<T>> for AsyncTask<Result<T, TimeoutError>> {
+    fn from(value: AsyncTimeoutTask<T>) -> Self {
+        AsyncTask {
+            fut: value.0.fut,
+            receiver: value.0.receiver,
+        }
+    }
+}
+
 pub struct AsyncReceiver<T> {
     buffer: oneshot::Receiver<T>,
 }
