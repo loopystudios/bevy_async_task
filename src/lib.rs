@@ -11,6 +11,29 @@ use tokio::time::Duration;
 pub struct AsyncTaskRunner<'s, T>(pub(crate) &'s mut Option<AsyncReceiver<T>>);
 
 impl<'s, T: Send + Sync + 'static> AsyncTaskRunner<'s, T> {
+    /// Returns whether the task runner is idle.
+    pub fn is_idle(&self) -> bool {
+        self.0.is_none()
+    }
+
+    /// Returns whether the task runner is pending (running, but not finished).
+    pub fn is_pending(&self) -> bool {
+        if let Some(ref rx) = self.0 {
+            !rx.received
+        } else {
+            false
+        }
+    }
+
+    /// Returns whether the task runner is finished.
+    pub fn is_finished(&self) -> bool {
+        if let Some(ref rx) = self.0 {
+            rx.received
+        } else {
+            false
+        }
+    }
+
     /// Run an async task in the background.
     pub fn begin(&mut self, task: impl Into<AsyncTask<T>>) {
         let task = task.into();
@@ -133,7 +156,10 @@ impl<T: Send + Sync + 'static> AsyncTask<T> {
             _ = tx.send(result);
         };
         let fut = Box::pin(new_fut);
-        let receiver = AsyncReceiver { buffer: rx };
+        let receiver = AsyncReceiver {
+            received: false,
+            buffer: rx,
+        };
         Self { fut, receiver }
     }
 
@@ -180,6 +206,7 @@ impl<T> From<AsyncTimeoutTask<T>> for AsyncTask<Result<T, TimeoutError>> {
 }
 
 pub struct AsyncReceiver<T> {
+    received: bool,
     buffer: oneshot::Receiver<T>,
 }
 
@@ -187,10 +214,14 @@ impl<T> AsyncReceiver<T> {
     /// Poll the current thread waiting for the async result.
     ///
     /// # Panics
-    /// Panics if the sender was dropped without sending.
+    /// Panics if the sender was dropped without sending
     pub fn try_recv(&mut self) -> Option<T> {
         match self.buffer.try_recv() {
-            Ok(t) => Some(t),
+            Ok(t) => {
+                self.received = true;
+                self.buffer.close();
+                Some(t)
+            }
             Err(oneshot::error::TryRecvError::Empty) => None,
             _ => panic!("the sender was dropped without sending"),
         }
