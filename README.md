@@ -47,7 +47,16 @@ pub fn main() {
 }
 ```
 
-Manual, polling an async-task:
+Blocking an async-task:
+
+```rust
+use bevy_async_task::AsyncTask;
+
+let task = AsyncTask::new(async move { 5 });
+assert_eq!(5, task.blocking_recv());
+```
+
+Need to go manual? Working with the async receiever:
 
 ```rust
 let task = AsyncTask::new(async move { 5 });
@@ -65,15 +74,6 @@ let result = loop {
     }
 };
 assert_eq!(5, result);
-```
-
-Blocking an async-task:
-
-```rust
-use bevy_async_task::AsyncTask;
-
-let task = AsyncTask::new(async move { 5 });
-assert_eq!(5, task.blocking_recv());
 ```
 
 ## Bevy version support
