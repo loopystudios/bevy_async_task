@@ -1,6 +1,6 @@
 use async_std::{future::TimeoutError, task::sleep};
 use bevy::prelude::*;
-use bevy_async_task::{AsnycTaskStatus, AsyncTask, AsyncTaskRunner, AsyncTimeoutTask};
+use bevy_async_task::{AsnycTaskStatus, AsyncTaskRunner, AsyncTimeoutTask};
 use std::time::Duration;
 
 async fn long_task() -> u32 {
@@ -11,8 +11,8 @@ async fn long_task() -> u32 {
 fn my_impatient_system(mut task_executor: AsyncTaskRunner<Result<u32, TimeoutError>>) {
     match task_executor.poll() {
         AsnycTaskStatus::Idle => {
-            let new_task = AsyncTimeoutTask::new(Duration::from_millis(500), long_task());
-            task_executor.begin(new_task);
+            let timed_task = AsyncTimeoutTask::new(Duration::from_millis(500), long_task());
+            task_executor.begin(timed_task);
             println!("Started!");
         }
         AsnycTaskStatus::Pending => {
