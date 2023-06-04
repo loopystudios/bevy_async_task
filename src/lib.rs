@@ -1,22 +1,31 @@
 use async_std::future::{timeout, TimeoutError};
 use bevy::ecs::system::{ReadOnlySystemParam, SystemMeta, SystemParam};
 use bevy::prelude::*;
+use bevy::tasks::AsyncComputeTaskPool;
 use bevy::utils::synccell::SyncCell;
 use std::{future::Future, pin::Pin};
 use tokio::sync::oneshot;
 use tokio::time::Duration;
 
-pub struct AsyncTaskRunner<'s, T>(pub(crate) &'s mut Option<AsyncTask<T>>);
+pub struct AsyncTaskRunner<'s, T>(pub(crate) &'s mut Option<AsyncReceiver<T>>);
 
-impl<'s, T> AsyncTaskRunner<'s, T> {
-    pub fn begin(&mut self, task: AsyncTask<T>) {
-        self.0.replace(task);
+impl<'s, T: Send + Sync + 'static> AsyncTaskRunner<'s, T> {
+    pub fn begin(&mut self, task: impl Into<AsyncTask<T>>) {
+        let task = task.into();
+        let (fut, rx) = task.into_parts();
+        let task_pool = AsyncComputeTaskPool::get();
+        let handle = task_pool.spawn(fut);
+        handle.detach();
+        self.0.replace(rx);
     }
 
     pub fn poll(&mut self) -> AsnycTaskStatus<T> {
         match self.0.as_mut() {
-            Some(task) => match task.receiver.try_recv() {
-                Some(v) => AsnycTaskStatus::Finished(v),
+            Some(rx) => match rx.try_recv() {
+                Some(v) => {
+                    self.0.take();
+                    AsnycTaskStatus::Finished(v)
+                }
                 None => AsnycTaskStatus::Pending,
             },
             None => AsnycTaskStatus::Idle,
@@ -29,7 +38,7 @@ unsafe impl<'s, T: Send + Sync + 'static> ReadOnlySystemParam for AsyncTaskRunne
 
 // SAFETY: Only accesses internal state locally
 unsafe impl<'a, T: Send + 'static> SystemParam for AsyncTaskRunner<'a, T> {
-    type State = SyncCell<Option<AsyncTask<T>>>;
+    type State = SyncCell<Option<AsyncReceiver<T>>>;
     type Item<'w, 's> = AsyncTaskRunner<'s, T>;
 
     fn init_state(_world: &mut World, _system_meta: &mut SystemMeta) -> Self::State {
