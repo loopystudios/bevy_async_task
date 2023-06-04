@@ -34,6 +34,15 @@ impl<'s, T: Send + Sync + 'static> AsyncTaskRunner<'s, T> {
         }
     }
 
+    /// Block awaiting the task result. Can only be used outside of async contexts.
+    ///
+    /// # Panics
+    /// Panics if called within an async context.
+    pub fn blocking_recv(&mut self, task: impl Into<AsyncTask<T>>) -> T {
+        let task = task.into();
+        task.blocking_recv()
+    }
+
     /// Run an async task in the background.
     pub fn begin(&mut self, task: impl Into<AsyncTask<T>>) {
         let task = task.into();
