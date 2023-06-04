@@ -10,6 +10,7 @@ use tokio::time::Duration;
 pub struct AsyncTaskRunner<'s, T>(pub(crate) &'s mut Option<AsyncReceiver<T>>);
 
 impl<'s, T: Send + Sync + 'static> AsyncTaskRunner<'s, T> {
+    /// Run an async task in the background.
     pub fn begin(&mut self, task: impl Into<AsyncTask<T>>) {
         let task = task.into();
         let (fut, rx) = task.into_parts();
@@ -19,6 +20,9 @@ impl<'s, T: Send + Sync + 'static> AsyncTaskRunner<'s, T> {
         self.0.replace(rx);
     }
 
+    /// Poll the task runner for the current task status. If no task has begun, this will return `Idle`.
+    /// Possible returns are `Idle`, `Pending`, or `Finished(T)`.
+    #[must_use]
     pub fn poll(&mut self) -> AsnycTaskStatus<T> {
         match self.0.as_mut() {
             Some(rx) => match rx.try_recv() {
@@ -56,6 +60,7 @@ unsafe impl<'a, T: Send + 'static> SystemParam for AsyncTaskRunner<'a, T> {
     }
 }
 
+/// The status of an AsyncTask.
 pub enum AsnycTaskStatus<T> {
     Idle,
     Pending,
@@ -87,6 +92,7 @@ impl<T: Send + Sync + 'static> AsyncTimeoutTask<T> {
         rx.buffer.blocking_recv().unwrap()
     }
 
+    /// Break apart the task into a runnable future and the receiver. The receiver is used to catch the output when the runnable is polled.
     #[allow(clippy::type_complexity)]
     #[must_use]
     pub fn into_parts(
@@ -140,6 +146,7 @@ impl<T: Send + Sync + 'static> AsyncTask<T> {
         rx.buffer.blocking_recv().unwrap()
     }
 
+    /// Break apart the task into a runnable future and the receiver. The receiver is used to catch the output when the runnable is polled.
     #[allow(clippy::type_complexity)]
     #[must_use]
     pub fn into_parts(
@@ -149,6 +156,16 @@ impl<T: Send + Sync + 'static> AsyncTask<T> {
         AsyncReceiver<T>,
     ) {
         (self.fut, self.receiver)
+    }
+}
+
+impl<T, Fnc> From<Fnc> for AsyncTask<T>
+where
+    Fnc: Future<Output = T> + Send + Sync + 'static,
+    Fnc::Output: Send + Sync + 'static,
+{
+    fn from(value: Fnc) -> Self {
+        AsyncTask::new(value)
     }
 }
 
