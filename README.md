@@ -13,9 +13,9 @@ Supports both **wasm** and **native**.
 Using the task executor, `AsyncTaskRunner<T>`:
 
 ```rust
-use async_std::{future::TimeoutError, task::sleep};
+use async_std::task::sleep;
 use bevy::prelude::*;
-use bevy_async_task::{AsnycTaskStatus, AsyncTask, AsyncTaskRunner};
+use bevy_async_task::{AsnycTaskStatus, AsyncTaskRunner};
 use std::time::Duration;
 
 async fn long_task() -> u32 {
@@ -26,8 +26,7 @@ async fn long_task() -> u32 {
 fn my_system(mut task_executor: AsyncTaskRunner<u32>) {
     match task_executor.poll() {
         AsnycTaskStatus::Idle => {
-            let new_task = AsyncTask::new(long_task());
-            task_executor.begin(new_task);
+            task_executor.begin(long_task());
             println!("Started!");
         }
         AsnycTaskStatus::Pending => {
