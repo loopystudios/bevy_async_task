@@ -1,5 +1,7 @@
 use async_std::future::{timeout, TimeoutError};
+use bevy::ecs::component::Tick;
 use bevy::ecs::system::{ReadOnlySystemParam, SystemMeta, SystemParam};
+use bevy::ecs::world::unsafe_world_cell::UnsafeWorldCell;
 use bevy::prelude::*;
 use bevy::tasks::AsyncComputeTaskPool;
 use bevy::utils::synccell::SyncCell;
@@ -86,8 +88,8 @@ unsafe impl<'a, T: Send + 'static> SystemParam for AsyncTaskRunner<'a, T> {
     unsafe fn get_param<'w, 's>(
         state: &'s mut Self::State,
         _system_meta: &SystemMeta,
-        _world: &'w World,
-        _change_tick: u32,
+        _world: UnsafeWorldCell<'w>,
+        _change_tick: Tick,
     ) -> Self::Item<'w, 's> {
         AsyncTaskRunner(state.get())
     }

@@ -28,6 +28,6 @@ fn my_impatient_system(mut task_executor: AsyncTaskRunner<Result<u32, TimeoutErr
 pub fn main() {
     App::new()
         .add_plugins(MinimalPlugins)
-        .add_system(my_impatient_system)
+        .add_systems(Main, my_impatient_system)
         .run();
 }
