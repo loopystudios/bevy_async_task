@@ -12,7 +12,7 @@ use tokio::time::Duration;
 /// A task runner which executes [`AsyncTask`]s in the background.
 pub struct AsyncTaskRunner<'s, T>(pub(crate) &'s mut Option<AsyncReceiver<T>>);
 
-impl<'s, T: 'static> AsyncTaskRunner<'s, T> {
+impl<'s, T> AsyncTaskRunner<'s, T> {
     /// Returns whether the task runner is idle.
     pub fn is_idle(&self) -> bool {
         self.0.is_none()
@@ -105,7 +105,7 @@ pub enum AsyncTaskStatus<T> {
 /// An [`AsyncTask`] with a timeout.
 pub struct AsyncTimeoutTask<T>(AsyncTask<Result<T, TimeoutError>>);
 
-impl<T: 'static> AsyncTimeoutTask<T> {
+impl<T> AsyncTimeoutTask<T> {
     pub fn new<F>(dur: Duration, fut: F) -> Self
     where
         F: Future<Output = T> + Send + 'static,
@@ -157,7 +157,7 @@ pub struct AsyncTask<T> {
     receiver: AsyncReceiver<T>,
 }
 
-impl<T: 'static> AsyncTask<T> {
+impl<T> AsyncTask<T> {
     pub fn new<F>(fut: F) -> Self
     where
         F: Future<Output = T> + Send + 'static,
