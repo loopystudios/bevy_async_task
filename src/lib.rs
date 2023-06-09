@@ -12,7 +12,7 @@ use tokio::time::Duration;
 /// A task runner which executes [`AsyncTask`]s in the background.
 pub struct AsyncTaskRunner<'s, T>(pub(crate) &'s mut Option<AsyncReceiver<T>>);
 
-impl<'s, T: Send + Sync + 'static> AsyncTaskRunner<'s, T> {
+impl<'s, T: Send + 'static> AsyncTaskRunner<'s, T> {
     /// Returns whether the task runner is idle.
     pub fn is_idle(&self) -> bool {
         self.0.is_none()
@@ -73,7 +73,7 @@ impl<'s, T: Send + Sync + 'static> AsyncTaskRunner<'s, T> {
 }
 
 // SAFETY: Only accesses internal state locally
-unsafe impl<'s, T: Send + Sync + 'static> ReadOnlySystemParam for AsyncTaskRunner<'s, T> {}
+unsafe impl<'s, T: Send + 'static> ReadOnlySystemParam for AsyncTaskRunner<'s, T> {}
 
 // SAFETY: Only accesses internal state locally
 unsafe impl<'a, T: Send + 'static> SystemParam for AsyncTaskRunner<'a, T> {
@@ -105,11 +105,11 @@ pub enum AsyncTaskStatus<T> {
 /// An [`AsyncTask`] with a timeout.
 pub struct AsyncTimeoutTask<T>(AsyncTask<Result<T, TimeoutError>>);
 
-impl<T: Send + Sync + 'static> AsyncTimeoutTask<T> {
+impl<T: Send + 'static> AsyncTimeoutTask<T> {
     pub fn new<F>(dur: Duration, fut: F) -> Self
     where
-        F: Future<Output = T> + Send + Sync + 'static,
-        F::Output: Send + Sync + 'static,
+        F: Future<Output = T> + Send + 'static,
+        F::Output: Send + 'static,
     {
         let new_fut = async move { timeout(dur, fut).await };
         Self(AsyncTask::new(new_fut))
@@ -153,15 +153,15 @@ impl<T> AsyncTimeoutTask<T> {
 
 /// A task than may be ran by an [`AsyncTaskRunner`], or broken into parts.
 pub struct AsyncTask<T> {
-    fut: Pin<Box<dyn Future<Output = ()> + Send + Sync + 'static>>,
+    fut: Pin<Box<dyn Future<Output = ()> + Send + 'static>>,
     receiver: AsyncReceiver<T>,
 }
 
-impl<T: Send + Sync + 'static> AsyncTask<T> {
+impl<T: Send + 'static> AsyncTask<T> {
     pub fn new<F>(fut: F) -> Self
     where
-        F: Future<Output = T> + Send + Sync + 'static,
-        F::Output: Send + Sync + 'static,
+        F: Future<Output = T> + Send + 'static,
+        F::Output: Send + 'static,
     {
         let (tx, rx) = oneshot::channel();
         let new_fut = async move {
@@ -201,8 +201,8 @@ impl<T: Send + Sync + 'static> AsyncTask<T> {
 
 impl<T, Fnc> From<Fnc> for AsyncTask<T>
 where
-    Fnc: Future<Output = T> + Send + Sync + 'static,
-    Fnc::Output: Send + Sync + 'static,
+    Fnc: Future<Output = T> + Send + 'static,
+    Fnc::Output: Send + 'static,
 {
     fn from(value: Fnc) -> Self {
         AsyncTask::new(value)
