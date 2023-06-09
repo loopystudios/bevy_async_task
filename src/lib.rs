@@ -4,7 +4,7 @@ use bevy::ecs::world::unsafe_world_cell::UnsafeWorldCell;
 use bevy::prelude::*;
 use bevy::tasks::AsyncComputeTaskPool;
 use bevy::utils::synccell::SyncCell;
-use tokio::sync::oneshot;
+use futures::channel::oneshot;
 
 #[cfg(not(target_arch = "wasm32"))]
 mod native;
@@ -121,13 +121,13 @@ impl<T> AsyncReceiver<T> {
     /// Panics if the sender was dropped without sending
     pub fn try_recv(&mut self) -> Option<T> {
         match self.buffer.try_recv() {
-            Ok(t) => {
+            Ok(Some(t)) => {
                 self.received = true;
                 self.buffer.close();
                 Some(t)
             }
-            Err(oneshot::error::TryRecvError::Empty) => None,
-            _ => panic!("the sender was dropped without sending"),
+            Ok(None) => None,
+            Err(_) => panic!("the sender was dropped without sending"),
         }
     }
 }

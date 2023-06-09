@@ -1,6 +1,6 @@
 use crate::AsyncReceiver;
+use futures::channel::oneshot;
 use std::{future::Future, pin::Pin};
-use tokio::sync::oneshot;
 
 /// A task than may be ran by an [`AsyncTaskRunner`], or broken into parts.
 pub struct AsyncTask<T> {
@@ -32,9 +32,9 @@ impl<T> AsyncTask<T> {
     /// # Panics
     /// Panics if called within an async context.
     pub fn blocking_recv(self) -> T {
-        let (fut, rx) = self.into_parts();
+        let (fut, mut rx) = self.into_parts();
         futures::executor::block_on(fut);
-        rx.buffer.blocking_recv().unwrap()
+        rx.buffer.try_recv().unwrap().unwrap()
     }
 
     /// Break apart the task into a runnable future and the receiver. The receiver is used to catch the output when the runnable is polled.
