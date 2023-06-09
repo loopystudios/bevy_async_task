@@ -20,3 +20,7 @@ bevy = { git = "https://github.com/bevyengine/bevy.git", rev = "3d752105644a18fb
 [dev-dependencies]
 async-std = "1.12"
 futures-timer = "3.0"
+
+[target.'cfg(target_arch = "wasm32")'.dev-dependencies]
+wasm-bindgen-futures = "0.4"
+wasm-bindgen-test = "0.3"
