@@ -23,7 +23,7 @@ fn system2() {
 pub fn main() {
     App::new()
         .add_plugins(MinimalPlugins)
-        .add_systems(Main, system1)
-        .add_systems(Main, system2)
+        .add_system(system1)
+        .add_system(system2)
         .run();
 }

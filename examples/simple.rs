@@ -26,6 +26,6 @@ fn my_system(mut task_executor: AsyncTaskRunner<u32>) {
 pub fn main() {
     App::new()
         .add_plugins(MinimalPlugins)
-        .add_systems(Main, my_system)
+        .add_system(my_system)
         .run();
 }
