@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 futures = "0.3"
-bevy = "0.10"
+bevy = "0.11"
 
 [dev-dependencies]
 async-std = "1.12"

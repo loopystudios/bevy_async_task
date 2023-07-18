@@ -1,8 +1,14 @@
 use crate::{AsyncReceiver, AsyncTask, AsyncTaskStatus};
-use bevy::ecs::system::{ReadOnlySystemParam, SystemMeta, SystemParam};
-use bevy::prelude::*;
-use bevy::tasks::AsyncComputeTaskPool;
-use bevy::utils::synccell::SyncCell;
+use bevy::{
+    ecs::{
+        component::Tick,
+        system::{ReadOnlySystemParam, SystemMeta, SystemParam},
+        world::unsafe_world_cell::UnsafeWorldCell,
+    },
+    prelude::*,
+    tasks::AsyncComputeTaskPool,
+    utils::synccell::SyncCell,
+};
 
 /// A task runner which can execute a single [`AsyncTask`] in the background.
 pub struct AsyncTaskRunner<'s, T>(pub(crate) &'s mut Option<AsyncReceiver<T>>);
@@ -83,8 +89,8 @@ unsafe impl<'a, T: Send + 'static> SystemParam for AsyncTaskRunner<'a, T> {
     unsafe fn get_param<'w, 's>(
         state: &'s mut Self::State,
         _system_meta: &SystemMeta,
-        _world: &'w World,
-        _change_tick: u32,
+        _world: UnsafeWorldCell<'w>,
+        _change_tick: Tick,
     ) -> Self::Item<'w, 's> {
         AsyncTaskRunner(state.get())
     }
