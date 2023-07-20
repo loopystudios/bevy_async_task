@@ -24,6 +24,6 @@ fn system1(mut task_pool: AsyncTaskPool<u64>) {
 pub fn main() {
     App::new()
         .add_plugins(MinimalPlugins)
-        .add_system(system1)
+        .add_systems(Update, system1)
         .run();
 }
