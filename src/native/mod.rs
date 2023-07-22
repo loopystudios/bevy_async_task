@@ -1,4 +1,5 @@
 use crate::AsyncReceiver;
+use async_compat::CompatExt;
 use futures::channel::oneshot;
 use std::{future::Future, pin::Pin};
 
@@ -16,7 +17,7 @@ impl<T> AsyncTask<T> {
     {
         let (tx, rx) = oneshot::channel();
         let new_fut = async move {
-            let result = fut.await;
+            let result = fut.compat().await;
             _ = tx.send(result);
         };
         let fut = Box::pin(new_fut);

@@ -9,6 +9,9 @@ edition = "2021"
 futures = "0.3"
 bevy = { version = "0.11", default-features = false }
 
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+async-compat = "0.2"
+
 [dev-dependencies]
 async-std = "1.12"
 futures-timer = "3.0"
