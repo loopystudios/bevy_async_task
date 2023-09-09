@@ -16,7 +16,6 @@ jobs:
       uses: dtolnay/rust-toolchain@stable
 
     - name: Cargo | Login
-      run: cargo login ${{ secrets.CARGO_REGISTRY_TOKEN }}
-
-    - name: Cargo | Publish
-      run: cargo publish
+      run: |
+        cargo login ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        cargo publish
