@@ -66,10 +66,13 @@ jobs:
       with:
         targets: wasm32-unknown-unknown
 
+    - name: Setup | wasm-pack
+      uses: jetli/wasm-pack-action@v0.4.0
+
     - name: Rust Cache
       uses: Swatinem/rust-cache@v2.6.2
 
-    - name: Build | Test
+    - name: Build | Test (native)
       run: cargo test --all
 
     - name: Build | Test (wasm)
