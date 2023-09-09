@@ -2,6 +2,7 @@
 name = "bevy-async-task"
 description = "Ergonomic abstractions to async programming in Bevy"
 license = "MIT or Apache 2.0"
+repository = "https://github.com/vectorgameexperts/bevy-async-task"
 authors = ["Spencer C. Imbleau"]
 keywords = ["gamedev", "async"]
 version = "1.0.0"
