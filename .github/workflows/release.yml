@@ -1,0 +1,20 @@
+name: Release
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Setup | Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup | Toolchain
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Publish
+      run: |
+        cargo publish --token ${{ secrets.CRATES_TOKEN }}
