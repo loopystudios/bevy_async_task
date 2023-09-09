@@ -37,7 +37,8 @@ impl<'s, T> AsyncTaskRunner<'s, T> {
         }
     }
 
-    /// Block awaiting the task result. Can only be used outside of async contexts.
+    /// Block awaiting the task result. Can only be used outside of async
+    /// contexts.
     ///
     /// # Panics
     /// Panics if called within an async context.
@@ -46,7 +47,9 @@ impl<'s, T> AsyncTaskRunner<'s, T> {
         task.blocking_recv()
     }
 
-    /// Start an async task in the background. If there is an existing task pending, it will be dropped and replaced with the given task. If you need to run multiple tasks, use the [AsyncTaskPool].
+    /// Start an async task in the background. If there is an existing task
+    /// pending, it will be dropped and replaced with the given task. If you
+    /// need to run multiple tasks, use the [AsyncTaskPool].
     pub fn start(&mut self, task: impl Into<AsyncTask<T>>) {
         let task = task.into();
         let (fut, rx) = task.into_parts();
@@ -56,8 +59,9 @@ impl<'s, T> AsyncTaskRunner<'s, T> {
         self.0.replace(rx);
     }
 
-    /// Poll the task runner for the current task status. If no task has begun, this will return `Idle`.
-    /// Possible returns are `Idle`, `Pending`, or `Finished(T)`.
+    /// Poll the task runner for the current task status. If no task has begun,
+    /// this will return `Idle`. Possible returns are `Idle`, `Pending`, or
+    /// `Finished(T)`.
     #[must_use]
     pub fn poll(&mut self) -> AsyncTaskStatus<T> {
         match self.0.as_mut() {
@@ -74,14 +78,20 @@ impl<'s, T> AsyncTaskRunner<'s, T> {
 }
 
 // SAFETY: Only accesses internal state locally, similar to bevy's `Local`
-unsafe impl<'s, T: Send + 'static> ReadOnlySystemParam for AsyncTaskRunner<'s, T> {}
+unsafe impl<'s, T: Send + 'static> ReadOnlySystemParam
+    for AsyncTaskRunner<'s, T>
+{
+}
 
 // SAFETY: Only accesses internal state locally, similar to bevy's `Local`
 unsafe impl<'a, T: Send + 'static> SystemParam for AsyncTaskRunner<'a, T> {
     type State = SyncCell<Option<AsyncReceiver<T>>>;
     type Item<'w, 's> = AsyncTaskRunner<'s, T>;
 
-    fn init_state(_world: &mut World, _system_meta: &mut SystemMeta) -> Self::State {
+    fn init_state(
+        _world: &mut World,
+        _system_meta: &mut SystemMeta,
+    ) -> Self::State {
         SyncCell::new(None)
     }
 

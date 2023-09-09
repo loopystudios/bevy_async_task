@@ -11,7 +11,9 @@ use bevy::{
 };
 
 /// A task pool which executes [`AsyncTask`]s in the background.
-pub struct AsyncTaskPool<'s, T>(pub(crate) &'s mut Vec<Option<AsyncReceiver<T>>>);
+pub struct AsyncTaskPool<'s, T>(
+    pub(crate) &'s mut Vec<Option<AsyncReceiver<T>>>,
+);
 
 impl<'s, T> AsyncTaskPool<'s, T> {
     /// Returns whether the task pool is idle.
@@ -29,7 +31,8 @@ impl<'s, T> AsyncTaskPool<'s, T> {
         self.0.push(Some(rx));
     }
 
-    /// Iterate and poll the task pool for the current task statuses. A task can yield `Idle`, `Pending`, or `Finished(T)`.
+    /// Iterate and poll the task pool for the current task statuses. A task can
+    /// yield `Idle`, `Pending`, or `Finished(T)`.
     pub fn iter_poll(&mut self) -> impl Iterator<Item = AsyncTaskStatus<T>> {
         let mut statuses = vec![];
         self.0.retain_mut(|task| match task {
@@ -53,14 +56,20 @@ impl<'s, T> AsyncTaskPool<'s, T> {
 }
 
 // SAFETY: Only accesses internal state locally, similar to bevy's `Local`
-unsafe impl<'s, T: Send + 'static> ReadOnlySystemParam for AsyncTaskPool<'s, T> {}
+unsafe impl<'s, T: Send + 'static> ReadOnlySystemParam
+    for AsyncTaskPool<'s, T>
+{
+}
 
 // SAFETY: Only accesses internal state locally, similar to bevy's `Local`
 unsafe impl<'a, T: Send + 'static> SystemParam for AsyncTaskPool<'a, T> {
     type State = SyncCell<Vec<Option<AsyncReceiver<T>>>>;
     type Item<'w, 's> = AsyncTaskPool<'s, T>;
 
-    fn init_state(_world: &mut World, _system_meta: &mut SystemMeta) -> Self::State {
+    fn init_state(
+        _world: &mut World,
+        _system_meta: &mut SystemMeta,
+    ) -> Self::State {
         SyncCell::new(vec![])
     }
 

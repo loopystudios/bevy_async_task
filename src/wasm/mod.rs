@@ -27,7 +27,8 @@ impl<T> AsyncTask<T> {
         Self { fut, receiver }
     }
 
-    /// Block awaiting the task result. Can only be used outside of async contexts.
+    /// Block awaiting the task result. Can only be used outside of async
+    /// contexts.
     ///
     /// # Panics
     /// Panics if called within an async context.
@@ -37,7 +38,8 @@ impl<T> AsyncTask<T> {
         rx.buffer.try_recv().unwrap().unwrap()
     }
 
-    /// Break apart the task into a runnable future and the receiver. The receiver is used to catch the output when the runnable is polled.
+    /// Break apart the task into a runnable future and the receiver. The
+    /// receiver is used to catch the output when the runnable is polled.
     #[allow(clippy::type_complexity)]
     #[must_use]
     pub fn into_parts(

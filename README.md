@@ -4,20 +4,26 @@
 [![crates.io](https://img.shields.io/crates/v/bevy-async-task.svg)](https://crates.io/crates/bevy-async-task)
 [![docs.rs](https://img.shields.io/docsrs/bevy-async-task)](https://docs.rs/bevy-async-task)
 
-This is a small crate that creates ergonomic abstractions to polling async compute tasks in the background on Bevy.
+A minmum crate for ergonomic abstractions to async programming in Bevy for all platforms. This crate helps to run async tasks in the background and retrieve results in the same system, and helps to block on futures within synchronous contexts.
 
-Supports both **wasm** and **native**.
+There is full API support for **wasm** and **native**. Android and iOS are untested (Help needed).
+
+## Bevy version support
+
+|bevy|bevy-async-task|
+|---|---|
+|0.11|0.1, main|
+|<= 0.10|Unsupported|
 
 ## Usage
 
-Using the task executor, `AsyncTaskRunner<T>`:
+Please see [examples](examples/) for more.
+
+### Polling in systems
+
+Poll one task at a time with `AsyncTaskRunner<T>`:
 
 ```rust
-use async_std::task::sleep;
-use bevy::prelude::*;
-use bevy_async_task::{AsnycTaskStatus, AsyncTaskRunner};
-use std::time::Duration;
-
 async fn long_task() -> u32 {
     sleep(Duration::from_millis(1000)).await;
     5
@@ -27,46 +33,68 @@ fn my_system(mut task_executor: AsyncTaskRunner<u32>) {
     match task_executor.poll() {
         AsnycTaskStatus::Idle => {
             task_executor.begin(long_task());
-            println!("Started!");
+            println!("Started new task!");
         }
         AsnycTaskStatus::Pending => {
-            // Waiting...
+            // <Insert loading screen>
         }
         AsnycTaskStatus::Finished(v) => {
             println!("Received {v}");
         }
     }
 }
+```
 
-pub fn main() {
-    App::new()
-        .add_plugins(MinimalPlugins)
-        .add_system(my_system)
-        .run();
+Poll many similar tasks simultaneously with `AsyncTaskPool<T>`:
+
+```rust
+fn my_system(mut task_pool: AsyncTaskPool<u64>) {
+    if task_pool.is_idle() {
+        println!("Queueing 5 tasks...");
+        for i in 1..=5 {
+            task_pool.spawn(async move { // Closures work too!
+                sleep(Duration::from_millis(i * 1000)).await;
+                i
+            });
+        }
+    }
+
+    for status in task_pool.iter_poll() {
+        if let AsyncTaskStatus::Finished(t) = status {
+            println!("Received {t}");
+        }
+    }
 }
 ```
 
-Blocking an async-task:
+Or block on an `AsyncTask<T>`:
 
 ```rust
-use bevy_async_task::AsyncTask;
+async fn long_task() -> u32 {
+    sleep(Duration::from_millis(1000)).await;
+    5
+}
 
-let task = AsyncTask::new(async move { 5 });
+let task = AsyncTask::new(long_task());
 assert_eq!(5, task.blocking_recv());
 ```
 
-Need to go manual? Working with the async receiever:
+Need to steer manually? Break the task into parts.
 
 ```rust
-let task = AsyncTask::new(async move { 5 });
+let task = AsyncTask::new(async move {
+    sleep(Duration::from_millis(1000)).await;
+    5
+});
 // Break the task into a runnable future and a receiver
 let (fut, mut rx) = task.into_parts();
+// The receiver will always be `None` until it is polled by Bevy.
 assert_eq!(None, rx.try_recv());
 // Run the future
 let task_pool = bevy::prelude::AsyncComputeTaskPool::get();
 let task = task_pool.spawn(fut);
-task.detach(); // Run in background
-// Wait for the result
+task.detach(); // Forget and run in background
+// Spin-lock, waiting for the result
 let result = loop {
     if let Some(v) = rx.try_recv() {
         break v;
@@ -74,13 +102,6 @@ let result = loop {
 };
 assert_eq!(5, result);
 ```
-
-## Bevy version support
-
-|bevy|bevy_web_asset|
-|---|---|
-|main|main|
-|0.10|0.1|
 
 ## License
 

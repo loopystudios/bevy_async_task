@@ -3,7 +3,9 @@ use async_compat::CompatExt;
 use futures::channel::oneshot;
 use std::{future::Future, pin::Pin};
 
-/// A task than may be ran by an [`AsyncTaskRunner`], or broken into parts.
+/// A wrapper type around an async future. The future may be executed
+/// asynchronously by an [`AsyncTaskRunner`] or [`AsyncTaskPool`], or it may be
+/// blocked on the current thread.
 pub struct AsyncTask<T> {
     fut: Pin<Box<dyn Future<Output = ()> + Send + 'static>>,
     receiver: AsyncReceiver<T>,
@@ -28,7 +30,8 @@ impl<T> AsyncTask<T> {
         Self { fut, receiver }
     }
 
-    /// Block awaiting the task result. Can only be used outside of async contexts.
+    /// Block awaiting the task result. Can only be used outside of async
+    /// contexts.
     ///
     /// # Panics
     /// Panics if called within an async context.
@@ -38,7 +41,8 @@ impl<T> AsyncTask<T> {
         rx.buffer.try_recv().unwrap().unwrap()
     }
 
-    /// Break apart the task into a runnable future and the receiver. The receiver is used to catch the output when the runnable is polled.
+    /// Break apart the task into a runnable future and the receiver. The
+    /// receiver is used to catch the output when the runnable is polled.
     #[allow(clippy::type_complexity)]
     #[must_use]
     pub fn into_parts(
