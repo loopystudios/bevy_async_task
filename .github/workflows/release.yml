@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  lint:
+  publish:
     runs-on: ubuntu-latest
     steps:
     - name: Setup | Checkout
