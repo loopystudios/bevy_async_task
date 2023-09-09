@@ -17,5 +17,4 @@ jobs:
 
     - name: Cargo | Login
       run: |
-        cargo login ${{ secrets.CARGO_REGISTRY_TOKEN }}
-        cargo publish
+        cargo publish --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
