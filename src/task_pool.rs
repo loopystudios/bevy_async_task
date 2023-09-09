@@ -10,7 +10,8 @@ use bevy::{
     utils::synccell::SyncCell,
 };
 
-/// A task pool which executes [`AsyncTask`]s in the background.
+/// A Bevy [`SystemParam`] to execute many similar [`AsyncTask`]s in the
+/// background simultaneously.
 pub struct AsyncTaskPool<'s, T>(
     pub(crate) &'s mut Vec<Option<AsyncReceiver<T>>>,
 );
@@ -36,16 +37,15 @@ impl<'s, T> AsyncTaskPool<'s, T> {
     pub fn iter_poll(&mut self) -> impl Iterator<Item = AsyncTaskStatus<T>> {
         let mut statuses = vec![];
         self.0.retain_mut(|task| match task {
-            Some(rx) => match rx.try_recv() {
-                Some(v) => {
+            Some(rx) => {
+                if let Some(v) = rx.try_recv() {
                     statuses.push(AsyncTaskStatus::Finished(v));
                     false
-                }
-                None => {
+                } else {
                     statuses.push(AsyncTaskStatus::Pending);
                     true
                 }
-            },
+            }
             None => {
                 statuses.push(AsyncTaskStatus::Idle);
                 true

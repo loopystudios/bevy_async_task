@@ -1,3 +1,4 @@
+/// A channel that catches an [`AsyncTask`](crate::AsyncTask) result.
 pub struct AsyncReceiver<T> {
     pub(crate) received: bool,
     pub(crate) buffer: futures::channel::oneshot::Receiver<T>,
@@ -16,7 +17,7 @@ impl<T> AsyncReceiver<T> {
                 Some(t)
             }
             Ok(None) => None,
-            Err(_) => panic!("the sender was dropped without sending"),
+            Err(e) => panic!("the sender was dropped without sending ({e})"),
         }
     }
 }

@@ -10,7 +10,8 @@ use bevy::{
     utils::synccell::SyncCell,
 };
 
-/// A task runner which can execute a single [`AsyncTask`] in the background.
+/// A Bevy [`SystemParam`] to execute [`AsyncTask`]s individually in the
+/// background.
 pub struct AsyncTaskRunner<'s, T>(pub(crate) &'s mut Option<AsyncReceiver<T>>);
 
 impl<'s, T> AsyncTaskRunner<'s, T> {
@@ -49,7 +50,7 @@ impl<'s, T> AsyncTaskRunner<'s, T> {
 
     /// Start an async task in the background. If there is an existing task
     /// pending, it will be dropped and replaced with the given task. If you
-    /// need to run multiple tasks, use the [AsyncTaskPool].
+    /// need to run multiple tasks, use the [`AsyncTaskPool`].
     pub fn start(&mut self, task: impl Into<AsyncTask<T>>) {
         let task = task.into();
         let (fut, rx) = task.into_parts();

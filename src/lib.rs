@@ -1,3 +1,6 @@
+#![deny(missing_docs)]
+//! Ergonomic abstractions to async programming in Bevy for all platforms.
+
 use cfg_if::cfg_if;
 
 mod receiver;
@@ -18,7 +21,7 @@ cfg_if! {
     }
 }
 
-/// The status of an [`AsyncTask`].
+/// A poll status for an [`AsyncTask`].
 pub enum AsyncTaskStatus<T> {
     /// No task is currently being polled.
     Idle,

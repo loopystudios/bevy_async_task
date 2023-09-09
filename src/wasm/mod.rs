@@ -2,13 +2,17 @@ use crate::AsyncReceiver;
 use futures::channel::oneshot;
 use std::{future::Future, pin::Pin};
 
-/// A task than may be ran by an [`AsyncTaskRunner`], or broken into parts.
+/// A wrapper type around an async future. The future may be executed
+/// asynchronously by an [`AsyncTaskRunner`](crate::AsyncTaskRunner) or
+/// [`AsyncTaskPool`](crate::AsyncTaskPool), or it may be blocked on the current
+/// thread.
 pub struct AsyncTask<T> {
     fut: Pin<Box<dyn Future<Output = ()> + 'static>>,
     receiver: AsyncReceiver<T>,
 }
 
 impl<T> AsyncTask<T> {
+    /// Create an async task from a future.
     pub fn new<F>(fut: F) -> Self
     where
         F: Future<Output = T> + 'static,
@@ -79,7 +83,7 @@ mod test {
 
             match rx.await {
                 Ok(v) => assert_eq!(3, v),
-                Err(_) => panic!("the sender dropped"),
+                Err(e) => panic!("the sender dropped ({e})"),
             }
         });
     }
