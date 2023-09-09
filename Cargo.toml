@@ -2,7 +2,7 @@
 name = "bevy-async-task"
 authors = ["Spencer C. Imbleau"]
 keywords = ["gamedev", "async"]
-version = "0.1.0"
+version = "1.0.0"
 edition = "2021"
 
 [lib]
