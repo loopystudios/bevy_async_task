@@ -1,7 +1,8 @@
 use crate::AsyncReceiver;
 use async_compat::CompatExt;
+use async_std::future::{timeout, TimeoutError};
 use futures::channel::oneshot;
-use std::{future::Future, pin::Pin};
+use std::{future::Future, pin::Pin, time::Duration};
 
 /// A wrapper type around an async future. The future may be executed
 /// asynchronously by an [`AsyncTaskRunner`](crate::AsyncTaskRunner) or
@@ -30,6 +31,35 @@ impl<T> AsyncTask<T> {
             buffer: rx,
         };
         Self { fut, receiver }
+    }
+
+    /// Create an async task from a future.
+    pub fn new_with_timeout<F>(
+        dur: Duration,
+        fut: F,
+    ) -> AsyncTask<Result<T, TimeoutError>>
+    where
+        F: Future<Output = T> + Send + 'static,
+        F::Output: Send + 'static,
+    {
+        let (tx, rx) = oneshot::channel();
+        let new_fut = async move {
+            //let mut timeout = if let Some(interval) = keep_alive_interval {
+            //    Either::Left(Delay::new(interval))
+            //} else {
+            //    Either::Right(std::future::pending())
+            //}
+            //.fuse();
+
+            let result = timeout(dur, fut.compat()).await;
+            _ = tx.send(result);
+        };
+        let fut = Box::pin(new_fut);
+        let receiver = AsyncReceiver {
+            received: false,
+            buffer: rx,
+        };
+        AsyncTask::<Result<T, TimeoutError>> { fut, receiver }
     }
 
     /// Block awaiting the task result. Can only be used outside of async
@@ -108,19 +138,56 @@ mod test {
         tokio::spawn(fut);
 
         // Wait for response
-        let fetch = Delay::new(Duration::from_millis(1)).fuse();
+        let fetch = Delay::new(Duration::from_millis(1));
         let timeout = Delay::new(Duration::from_millis(100)).fuse();
         pin_mut!(timeout, fetch);
-        select! {
-            _ = &mut fetch => {
-                if let Some(v) = rx.try_recv() {
+        'result: loop {
+            select! {
+                _ = (&mut fetch).fuse() => {
+                    if let Some(v) = rx.try_recv() {
+
                     assert_eq!(5, v);
-                } else {
-                    // Reset the clock
-                    fetch.set(Delay::new(Duration::from_millis(1)).fuse());
+                        break 'result;
+                    } else {
+                        // Reset the clock
+                        fetch.reset(Duration::from_millis(1));
+                    }
                 }
-            }
-            _ = timeout => panic!("timeout")
-        };
+                _ = &mut timeout => panic!("timeout")
+            };
+        }
+    }
+
+    #[tokio::test]
+    async fn test_timeout() {
+        let task = AsyncTask::new_with_timeout(
+            Duration::from_millis(5),
+            async_std::future::pending::<()>(),
+        );
+        let (fut, mut rx) = task.into_parts();
+
+        assert_eq!(None, rx.try_recv());
+
+        // Spawn
+        tokio::spawn(fut);
+
+        // Wait for response
+        let fetch = Delay::new(Duration::from_millis(1));
+        let timeout = Delay::new(Duration::from_millis(100)).fuse();
+        pin_mut!(timeout, fetch);
+        'result: loop {
+            select! {
+                _ = (&mut fetch).fuse() => {
+                    if let Some(v) = rx.try_recv() {
+                        assert!(v.is_err(), "timeout should have triggered!");
+                        break 'result;
+                    } else {
+                        // Reset the clock
+                        fetch.reset(Duration::from_millis(1));
+                    }
+                }
+                _ = &mut timeout => panic!("timeout")
+            };
+        }
     }
 }

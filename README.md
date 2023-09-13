@@ -4,7 +4,7 @@
 [![crates.io](https://img.shields.io/crates/v/bevy-async-task.svg)](https://crates.io/crates/bevy-async-task)
 [![docs.rs](https://img.shields.io/docsrs/bevy-async-task)](https://docs.rs/bevy-async-task)
 
-A minmum crate for ergonomic abstractions to async programming in Bevy for all platforms. This crate helps to run async tasks in the background and retrieve results in the same system, and helps to block on futures within synchronous contexts.
+A minmum crate for ergonomic abstractions to async programming in Bevy for all platforms. This crate helps to run async tasks in the background with timeout support and retrieve results in the same system, and helps to block on futures within synchronous contexts.
 
 There is full API support for **wasm** and **native**. Android and iOS are untested (Help needed).
 
@@ -67,7 +67,7 @@ fn my_system(mut task_pool: AsyncTaskPool<u64>) {
 }
 ```
 
-Or block on an `AsyncTask<T>`:
+Also, use timeouts or block on an `AsyncTask<T>`:
 
 ```rust
 async fn long_task() -> u32 {
@@ -75,8 +75,13 @@ async fn long_task() -> u32 {
     5
 }
 
+// Blocking:
 let task = AsyncTask::new(long_task());
 assert_eq!(5, task.blocking_recv());
+
+// Timeout:
+let task = AsyncTask::new_with_timeout(Duration::from_millis(5), long_task());
+assert!(task.blocking_recv().is_err());
 ```
 
 Need to steer manually? Break the task into parts.

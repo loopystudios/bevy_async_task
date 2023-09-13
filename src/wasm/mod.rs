@@ -1,6 +1,7 @@
 use crate::AsyncReceiver;
+use async_std::future::{timeout, TimeoutError};
 use futures::channel::oneshot;
-use std::{future::Future, pin::Pin};
+use std::{future::Future, pin::Pin, time::Duration};
 
 /// A wrapper type around an async future. The future may be executed
 /// asynchronously by an [`AsyncTaskRunner`](crate::AsyncTaskRunner) or
@@ -29,6 +30,28 @@ impl<T> AsyncTask<T> {
             buffer: rx,
         };
         Self { fut, receiver }
+    }
+
+    /// Create an async task from a future.
+    pub fn new_with_timeout<F>(
+        dur: Duration,
+        fut: F,
+    ) -> AsyncTask<Result<T, TimeoutError>>
+    where
+        F: Future<Output = T> + 'static,
+        F::Output: Send + 'static,
+    {
+        let (tx, rx) = oneshot::channel();
+        let new_fut = async move {
+            let result = timeout(dur, fut).await;
+            _ = tx.send(result);
+        };
+        let fut = Box::pin(new_fut);
+        let receiver = AsyncReceiver {
+            received: false,
+            buffer: rx,
+        };
+        AsyncTask::<Result<T, TimeoutError>> { fut, receiver }
     }
 
     /// Block awaiting the task result. Can only be used outside of async
@@ -69,14 +92,16 @@ where
 #[cfg(test)]
 mod test {
     use super::*;
+    use wasm_bindgen::JsValue;
+    use wasm_bindgen_futures::JsFuture;
     use wasm_bindgen_test::wasm_bindgen_test;
 
     #[wasm_bindgen_test]
     async fn test_oneshot() {
         let (tx, rx) = oneshot::channel();
 
-        // Spawn
-        wasm_bindgen_futures::spawn_local(async move {
+        // Async test
+        JsFuture::from(wasm_bindgen_futures::future_to_promise(async move {
             if tx.send(3).is_err() {
                 panic!("the receiver dropped");
             }
@@ -85,7 +110,11 @@ mod test {
                 Ok(v) => assert_eq!(3, v),
                 Err(e) => panic!("the sender dropped ({e})"),
             }
-        });
+
+            Ok(JsValue::NULL)
+        }))
+        .await
+        .unwrap();
     }
 
     #[wasm_bindgen_test]
@@ -101,10 +130,38 @@ mod test {
 
         assert_eq!(None, rx.try_recv());
 
-        // Spawn
-        wasm_bindgen_futures::spawn_local(async move {
+        // Convert to Promise and -await it.
+        JsFuture::from(wasm_bindgen_futures::future_to_promise(async move {
             fut.await;
-            assert_eq!(Some(5), rx.try_recv());
-        });
+            Ok(JsValue::NULL)
+        }))
+        .await
+        .unwrap();
+
+        // Spawn
+        assert_eq!(Some(5), rx.try_recv());
+    }
+
+    #[wasm_bindgen_test]
+    async fn test_timeout() {
+        let task = AsyncTask::new_with_timeout(
+            Duration::from_millis(5),
+            async_std::future::pending::<()>(),
+        );
+        let (fut, mut rx) = task.into_parts();
+
+        assert_eq!(None, rx.try_recv());
+
+        // Convert to Promise and -await it.
+        JsFuture::from(wasm_bindgen_futures::future_to_promise(async move {
+            fut.await;
+            Ok(JsValue::NULL)
+        }))
+        .await
+        .unwrap();
+
+        // Spawn
+        let v = rx.try_recv().expect("future loaded no value");
+        assert!(v.is_err(), "timeout should have triggered!");
     }
 }
