@@ -38,7 +38,7 @@ impl<T> AsyncTask<T> {
         Self { fut, receiver }
     }
 
-    /// Create an async task from a future.
+    /// Create an async task from a future with a timeout.
     pub fn new_with_timeout<F>(
         dur: Duration,
         fut: F,
