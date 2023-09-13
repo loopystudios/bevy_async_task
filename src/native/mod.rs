@@ -13,6 +13,31 @@ pub struct AsyncTask<T> {
     receiver: AsyncReceiver<T>,
 }
 
+impl<T> AsyncTask<T>
+where
+    T: Send + 'static,
+{
+    /// Add a timeout to the task.
+    pub fn with_timeout(
+        mut self,
+        dur: Duration,
+    ) -> AsyncTask<Result<T, TimeoutError>> {
+        let (tx, rx) = oneshot::channel();
+        let new_fut = async move {
+            let result = timeout(dur, self.fut)
+                .await
+                .map(|_| self.receiver.try_recv().unwrap());
+            _ = tx.send(result);
+        };
+        let fut = Box::pin(new_fut);
+        let receiver = AsyncReceiver {
+            received: false,
+            buffer: rx,
+        };
+        AsyncTask::<Result<T, TimeoutError>> { fut, receiver }
+    }
+}
+
 impl<T> AsyncTask<T> {
     /// Never resolves to a value or finishes.
     pub fn pending() -> AsyncTask<()> {
@@ -162,6 +187,37 @@ mod test {
             Duration::from_millis(5),
             async_std::future::pending::<()>(),
         );
+        let (fut, mut rx) = task.into_parts();
+
+        assert_eq!(None, rx.try_recv());
+
+        // Spawn
+        tokio::spawn(fut);
+
+        // Wait for response
+        let fetch = Delay::new(Duration::from_millis(1));
+        let timeout = Delay::new(Duration::from_millis(100)).fuse();
+        pin_mut!(timeout, fetch);
+        'result: loop {
+            select! {
+                _ = (&mut fetch).fuse() => {
+                    if let Some(v) = rx.try_recv() {
+                        assert!(v.is_err(), "timeout should have triggered!");
+                        break 'result;
+                    } else {
+                        // Reset the clock
+                        fetch.reset(Duration::from_millis(1));
+                    }
+                }
+                _ = &mut timeout => panic!("timeout")
+            };
+        }
+    }
+
+    #[tokio::test]
+    async fn test_with_timeout() {
+        let task = AsyncTask::new(async_std::future::pending::<()>())
+            .with_timeout(Duration::from_millis(5));
         let (fut, mut rx) = task.into_parts();
 
         assert_eq!(None, rx.try_recv());

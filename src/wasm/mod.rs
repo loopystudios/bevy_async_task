@@ -12,6 +12,31 @@ pub struct AsyncTask<T> {
     receiver: AsyncReceiver<T>,
 }
 
+impl<T> AsyncTask<T>
+where
+    T: 'static,
+{
+    /// Add a timeout to the task.
+    pub fn with_timeout(
+        mut self,
+        dur: Duration,
+    ) -> AsyncTask<Result<T, TimeoutError>> {
+        let (tx, rx) = oneshot::channel();
+        let new_fut = async move {
+            let result = timeout(dur, self.fut)
+                .await
+                .map(|_| self.receiver.try_recv().unwrap());
+            _ = tx.send(result);
+        };
+        let fut = Box::pin(new_fut);
+        let receiver = AsyncReceiver {
+            received: false,
+            buffer: rx,
+        };
+        AsyncTask::<Result<T, TimeoutError>> { fut, receiver }
+    }
+}
+
 impl<T> AsyncTask<T> {
     /// Never resolves to a value or finishes.
     pub fn pending() -> AsyncTask<()> {
@@ -153,6 +178,27 @@ mod test {
             Duration::from_millis(5),
             async_std::future::pending::<()>(),
         );
+        let (fut, mut rx) = task.into_parts();
+
+        assert_eq!(None, rx.try_recv());
+
+        // Convert to Promise and -await it.
+        JsFuture::from(wasm_bindgen_futures::future_to_promise(async move {
+            fut.await;
+            Ok(JsValue::NULL)
+        }))
+        .await
+        .unwrap();
+
+        // Spawn
+        let v = rx.try_recv().expect("future loaded no value");
+        assert!(v.is_err(), "timeout should have triggered!");
+    }
+
+    #[wasm_bindgen_test]
+    async fn test_with_timeout() {
+        let task = AsyncTask::new(async_std::future::pending::<()>())
+            .with_timeout(Duration::from_millis(5));
         let (fut, mut rx) = task.into_parts();
 
         assert_eq!(None, rx.try_recv());
