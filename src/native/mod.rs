@@ -17,6 +17,11 @@ impl<T> AsyncTask<T>
 where
     T: Send + 'static,
 {
+    /// Never resolves to a value or finishes.
+    pub fn pending() -> AsyncTask<T> {
+        AsyncTask::new(async_std::future::pending::<T>())
+    }
+
     /// Add a timeout to the task.
     pub fn with_timeout(
         mut self,
@@ -39,11 +44,6 @@ where
 }
 
 impl<T> AsyncTask<T> {
-    /// Never resolves to a value or finishes.
-    pub fn pending() -> AsyncTask<()> {
-        AsyncTask::new(async_std::future::pending::<()>())
-    }
-
     /// Create an async task from a future.
     pub fn new<F>(fut: F) -> Self
     where
@@ -216,8 +216,8 @@ mod test {
 
     #[tokio::test]
     async fn test_with_timeout() {
-        let task = AsyncTask::new(async_std::future::pending::<()>())
-            .with_timeout(Duration::from_millis(5));
+        let task =
+            AsyncTask::<()>::pending().with_timeout(Duration::from_millis(5));
         let (fut, mut rx) = task.into_parts();
 
         assert_eq!(None, rx.try_recv());

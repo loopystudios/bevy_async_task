@@ -37,12 +37,17 @@ where
     }
 }
 
-impl<T> AsyncTask<T> {
+impl<T> AsyncTask<T>
+where
+    T: Send + 'static,
+{
     /// Never resolves to a value or finishes.
-    pub fn pending() -> AsyncTask<()> {
-        AsyncTask::new(async_std::future::pending::<()>())
+    pub fn pending() -> AsyncTask<T> {
+        AsyncTask::new(async_std::future::pending::<T>())
     }
+}
 
+impl<T> AsyncTask<T> {
     /// Create an async task from a future.
     pub fn new<F>(fut: F) -> Self
     where
@@ -197,8 +202,8 @@ mod test {
 
     #[wasm_bindgen_test]
     async fn test_with_timeout() {
-        let task = AsyncTask::new(async_std::future::pending::<()>())
-            .with_timeout(Duration::from_millis(5));
+        let task =
+            AsyncTask::<()>::pending().with_timeout(Duration::from_millis(5));
         let (fut, mut rx) = task.into_parts();
 
         assert_eq!(None, rx.try_recv());
