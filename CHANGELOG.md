@@ -9,6 +9,7 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 ### added
 
 - added timeout support via `AsyncTask::new_with_timeout(dur, f)`
+- added `AsyncTask::pending()` as an abstraction for a task that never finishes
 
 ## 1.0.1
 

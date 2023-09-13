@@ -14,6 +14,11 @@ pub struct AsyncTask<T> {
 }
 
 impl<T> AsyncTask<T> {
+    /// Never resolves to a value or finishes.
+    pub fn pending() -> AsyncTask<()> {
+        AsyncTask::new(async_std::future::pending::<()>())
+    }
+
     /// Create an async task from a future.
     pub fn new<F>(fut: F) -> Self
     where
@@ -44,13 +49,6 @@ impl<T> AsyncTask<T> {
     {
         let (tx, rx) = oneshot::channel();
         let new_fut = async move {
-            //let mut timeout = if let Some(interval) = keep_alive_interval {
-            //    Either::Left(Delay::new(interval))
-            //} else {
-            //    Either::Right(std::future::pending())
-            //}
-            //.fuse();
-
             let result = timeout(dur, fut.compat()).await;
             _ = tx.send(result);
         };

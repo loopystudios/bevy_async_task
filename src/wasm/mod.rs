@@ -13,6 +13,11 @@ pub struct AsyncTask<T> {
 }
 
 impl<T> AsyncTask<T> {
+    /// Never resolves to a value or finishes.
+    pub fn pending() -> AsyncTask<()> {
+        AsyncTask::new(async_std::future::pending::<()>())
+    }
+
     /// Create an async task from a future.
     pub fn new<F>(fut: F) -> Self
     where
