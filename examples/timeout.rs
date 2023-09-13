@@ -4,12 +4,10 @@ use std::time::Duration;
 
 /// Use a timeout
 fn system() {
-    let _timeout = AsyncTask::new_with_timeout(
-        Duration::from_millis(1000),
-        async_std::future::pending::<()>(),
-    )
-    .blocking_recv()
-    .unwrap_err();
+    let _timeout = AsyncTask::<()>::pending()
+        .with_timeout(Duration::from_millis(1000))
+        .blocking_recv()
+        .unwrap_err();
 
     println!("Timeout!");
 }
