@@ -67,20 +67,15 @@ fn my_system(mut task_pool: AsyncTaskPool<u64>) {
 }
 ```
 
-Also, use timeouts or block on an `AsyncTask<T>`:
+Also, you may use timeouts or block on an `AsyncTask<T>`:
 
 ```rust
-async fn long_task() -> u32 {
-    sleep(Duration::from_millis(1000)).await;
-    5
-}
-
 // Blocking:
-let task = AsyncTask::new(long_task());
+let task = AsyncTask::new(async { 5 });
 assert_eq!(5, task.blocking_recv());
 
 // Timeout:
-let task = AsyncTask::new_with_timeout(Duration::from_millis(5), long_task());
+let task = AsyncTask::<()>::pending().with_timeout(Duration::from_millis(10));
 assert!(task.blocking_recv().is_err());
 ```
 
