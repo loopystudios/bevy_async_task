@@ -4,6 +4,12 @@ This changelog follows the patterns described here: <https://keepachangelog.com/
 
 Subheadings to categorize changes are `added, changed, deprecated, removed, fixed, security`.
 
+## 1.2.0
+
+### added
+
+- exported `TimeoutError`
+
 ## 1.1.0
 
 ### added

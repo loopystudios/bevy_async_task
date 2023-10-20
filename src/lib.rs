@@ -7,6 +7,9 @@ mod receiver;
 mod task_pool;
 mod task_runner;
 
+// Re-exports
+pub use async_std::future::TimeoutError;
+
 pub use receiver::AsyncReceiver;
 pub use task_pool::AsyncTaskPool;
 pub use task_runner::AsyncTaskRunner;
