@@ -4,7 +4,7 @@
 [![crates.io](https://img.shields.io/crates/v/bevy-async-task.svg)](https://crates.io/crates/bevy-async-task)
 [![docs.rs](https://img.shields.io/docsrs/bevy-async-task)](https://docs.rs/bevy-async-task)
 
-A minmum crate for ergonomic abstractions to async programming in Bevy for all platforms. This crate helps to run async tasks in the background with timeout support and retrieve results in the same system, and helps to block on futures within synchronous contexts.
+A minimum crate for ergonomic abstractions to async programming in Bevy for all platforms. This crate helps to run async tasks in the background with timeout support and retrieve results in the same system, and helps to block on futures within synchronous contexts.
 
 There is full API support for **wasm** and **native**. Android and iOS are untested (Help needed).
 
