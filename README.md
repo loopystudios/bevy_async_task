@@ -12,7 +12,7 @@ There is full API support for **wasm** and **native**. Android and iOS are untes
 
 |bevy|bevy-async-task|
 |---|---|
-|0.11|1.1, main|
+|0.11|1.2, main|
 |<= 0.10|Unsupported|
 
 ## Usage
