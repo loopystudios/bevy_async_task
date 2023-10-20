@@ -19,3 +19,6 @@
 # Some people use pre-commit
 .pre-commit-config.yaml
 .pre-commit-config.yml
+
+# Some people use Apply
+.DS_Store
