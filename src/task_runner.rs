@@ -2,7 +2,9 @@ use crate::{AsyncReceiver, AsyncTask, AsyncTaskStatus};
 use bevy::{
     ecs::{
         component::Tick,
-        system::{ReadOnlySystemParam, SystemMeta, SystemParam},
+        system::{
+            ExclusiveSystemParam, ReadOnlySystemParam, SystemMeta, SystemParam,
+        },
         world::unsafe_world_cell::UnsafeWorldCell,
     },
     prelude::*,
@@ -78,13 +80,29 @@ impl<'s, T> AsyncTaskRunner<'s, T> {
     }
 }
 
-// SAFETY: Only accesses internal state locally, similar to bevy's `Local`
+impl<'_s, T: Send + 'static> ExclusiveSystemParam for AsyncTaskRunner<'_s, T> {
+    type State = SyncCell<Option<AsyncReceiver<T>>>;
+    type Item<'s> = AsyncTaskRunner<'s, T>;
+
+    fn init(_world: &mut World, _system_meta: &mut SystemMeta) -> Self::State {
+        SyncCell::new(None)
+    }
+
+    fn get_param<'s>(
+        state: &'s mut Self::State,
+        _system_meta: &SystemMeta,
+    ) -> Self::Item<'s> {
+        AsyncTaskRunner(state.get())
+    }
+}
+
+// SAFETY: only local state is accessed
 unsafe impl<'s, T: Send + 'static> ReadOnlySystemParam
     for AsyncTaskRunner<'s, T>
 {
 }
 
-// SAFETY: Only accesses internal state locally, similar to bevy's `Local`
+// SAFETY: only local state is accessed
 unsafe impl<'a, T: Send + 'static> SystemParam for AsyncTaskRunner<'a, T> {
     type State = SyncCell<Option<AsyncReceiver<T>>>;
     type Item<'w, 's> = AsyncTaskRunner<'s, T>;

@@ -2,7 +2,9 @@ use crate::{AsyncReceiver, AsyncTask, AsyncTaskStatus};
 use bevy::{
     ecs::{
         component::Tick,
-        system::{ReadOnlySystemParam, SystemMeta, SystemParam},
+        system::{
+            ExclusiveSystemParam, ReadOnlySystemParam, SystemMeta, SystemParam,
+        },
         world::unsafe_world_cell::UnsafeWorldCell,
     },
     prelude::*,
@@ -55,13 +57,30 @@ impl<'s, T> AsyncTaskPool<'s, T> {
     }
 }
 
-// SAFETY: Only accesses internal state locally, similar to bevy's `Local`
+impl<'_s, T: Send + 'static> ExclusiveSystemParam for AsyncTaskPool<'_s, T> {
+    type State = SyncCell<Vec<Option<AsyncReceiver<T>>>>;
+    type Item<'s> = AsyncTaskPool<'s, T>;
+
+    fn init(_world: &mut World, _system_meta: &mut SystemMeta) -> Self::State {
+        SyncCell::new(vec![])
+    }
+
+    #[inline]
+    fn get_param<'s>(
+        state: &'s mut Self::State,
+        _system_meta: &SystemMeta,
+    ) -> Self::Item<'s> {
+        AsyncTaskPool(state.get())
+    }
+}
+
+// SAFETY: only local state is accessed
 unsafe impl<'s, T: Send + 'static> ReadOnlySystemParam
     for AsyncTaskPool<'s, T>
 {
 }
 
-// SAFETY: Only accesses internal state locally, similar to bevy's `Local`
+// SAFETY: only local state is accessed
 unsafe impl<'a, T: Send + 'static> SystemParam for AsyncTaskPool<'a, T> {
     type State = SyncCell<Vec<Option<AsyncReceiver<T>>>>;
     type Item<'w, 's> = AsyncTaskPool<'s, T>;
