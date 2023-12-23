@@ -4,6 +4,21 @@ This changelog follows the patterns described here: <https://keepachangelog.com/
 
 Subheadings to categorize changes are `added, changed, deprecated, removed, fixed, security`.
 
+## 1.3.1
+
+## added
+
+- `TaskRunner` and `TaskPool` now can be exclusive systems in Bevy
+
+## changed
+
+- internally, oneshot channels are now tokio-based
+- `blocking_recv` now uses `bevy_task`, and panics are are no longer possible
+
+## fixed
+
+- native oneshot channels dropping due to the missing `multi-threaded` feature on bevy 0.12
+
 ## 1.3.0
 
 ### changed

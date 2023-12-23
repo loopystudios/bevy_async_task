@@ -1,7 +1,7 @@
 use crate::AsyncReceiver;
 use async_std::future::{timeout, TimeoutError};
-use futures::channel::oneshot;
 use std::{future::Future, pin::Pin, time::Duration};
+use tokio::sync::oneshot;
 
 /// A wrapper type around an async future. The future may be executed
 /// asynchronously by an [`AsyncTaskRunner`](crate::AsyncTaskRunner) or
@@ -91,13 +91,10 @@ impl<T> AsyncTask<T> {
 
     /// Block awaiting the task result. Can only be used outside of async
     /// contexts.
-    ///
-    /// # Panics
-    /// Panics if called within an async context.
     pub fn blocking_recv(self) -> T {
         let (fut, mut rx) = self.into_parts();
-        futures::executor::block_on(fut);
-        rx.buffer.try_recv().unwrap().unwrap()
+        bevy::tasks::block_on(fut);
+        rx.buffer.try_recv().unwrap()
     }
 
     /// Break apart the task into a runnable future and the receiver. The
