@@ -4,6 +4,12 @@ This changelog follows the patterns described here: <https://keepachangelog.com/
 
 Subheadings to categorize changes are `added, changed, deprecated, removed, fixed, security`.
 
+## 1.4.0
+
+### changed
+
+Updated to bevy 0.13
+
 ## 1.3.1
 
 ## added
