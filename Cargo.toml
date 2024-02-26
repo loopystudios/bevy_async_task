@@ -12,7 +12,7 @@ edition = "2021"
 
 [dependencies]
 tokio = { version = "1", default-features = false, features = ["sync"] }
-bevy = { version = "0.12", default-features = false, features = [
+bevy = { version = "0.13", default-features = false, features = [
   "multi-threaded",
 ] }
 cfg-if = "1.0"
