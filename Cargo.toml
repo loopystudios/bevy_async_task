@@ -1,35 +1,35 @@
 [package]
-name = "bevy-async-task"
+name = "bevy_async_task"
 description = "Ergonomic abstractions to async programming in Bevy"
 license = "MIT/Apache-2.0"
-repository = "https://github.com/vectorgameexperts/bevy-async-task"
+repository = "https://github.com/loopystudios/bevy_async_task"
 authors = ["Spencer C. Imbleau"]
 keywords = ["gamedev", "async"]
-version = "1.4.0"
+version = "0.1.0"
 edition = "2021"
 
 [lib]
 
 [dependencies]
-tokio = { version = "1", default-features = false, features = ["sync"] }
+tokio = { version = "1.36.0", default-features = false, features = ["sync"] }
 bevy = { version = "0.13", default-features = false, features = [
   "multi-threaded",
 ] }
-cfg-if = "1.0"
-async-std = "1.12"
+cfg-if = "1.0.0"
+async-std = "1.12.0"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-async-compat = "0.2"
+async-compat = "0.2.3"
 
 [dev-dependencies]
-futures = "0.3"
-futures-timer = "3.0"
+futures = "0.3.30"
+futures-timer = "3.0.3"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
-tokio = { version = "1", features = ["full"] }
+tokio = { version = "1.36.0", features = ["full"] }
 
 [target.'cfg(target_arch = "wasm32")'.dev-dependencies]
-wasm-bindgen-futures = "0.4"
-wasm-bindgen-test = "0.3"
-js-sys = "0.3"
-wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4.42"
+wasm-bindgen-test = "0.3.42"
+js-sys = "0.3.69"
+wasm-bindgen = "0.2.92"

@@ -1,8 +1,8 @@
 # Bevy Async Task
 
 ![MIT/Apache 2.0](https://img.shields.io/badge/license-MIT%2FApache-blue.svg)
-[![crates.io](https://img.shields.io/crates/v/bevy-async-task.svg)](https://crates.io/crates/bevy-async-task)
-[![docs.rs](https://img.shields.io/docsrs/bevy-async-task)](https://docs.rs/bevy-async-task)
+[![crates.io](https://img.shields.io/crates/v/bevy_async_task.svg)](https://crates.io/crates/bevy_async_task)
+[![docs.rs](https://img.shields.io/docsrs/bevy_async_task)](https://docs.rs/bevy_async_task)
 
 A minimum crate for ergonomic abstractions to async programming in Bevy for all platforms. This crate helps to run async tasks in the background with timeout support and retrieve results in the same system, and helps to block on futures within synchronous contexts.
 
@@ -10,12 +10,10 @@ There is full API support for **wasm** and **native**. Android and iOS are untes
 
 ## Bevy version support
 
-|bevy|bevy-async-task|
+|bevy|bevy_async_task|
 |---|---|
-|0.13|1.4, main|
-|0.12|1.3|
-|0.11|1.2|
-|<= 0.10|Unsupported|
+|0.13|0.1, main|
+|<= 0.13|Unsupported|
 
 ## Usage
 
