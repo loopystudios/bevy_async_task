@@ -2,9 +2,7 @@ use crate::{AsyncReceiver, AsyncTask, AsyncTaskStatus};
 use bevy::{
     ecs::{
         component::Tick,
-        system::{
-            ExclusiveSystemParam, ReadOnlySystemParam, SystemMeta, SystemParam,
-        },
+        system::{ExclusiveSystemParam, ReadOnlySystemParam, SystemMeta, SystemParam},
         world::unsafe_world_cell::UnsafeWorldCell,
     },
     prelude::*,
@@ -14,9 +12,7 @@ use bevy::{
 
 /// A Bevy [`SystemParam`] to execute many similar [`AsyncTask`]s in the
 /// background simultaneously.
-pub struct AsyncTaskPool<'s, T>(
-    pub(crate) &'s mut Vec<Option<AsyncReceiver<T>>>,
-);
+pub struct AsyncTaskPool<'s, T>(pub(crate) &'s mut Vec<Option<AsyncReceiver<T>>>);
 
 impl<'s, T> AsyncTaskPool<'s, T> {
     /// Returns whether the task pool is idle.
@@ -66,29 +62,20 @@ impl<'_s, T: Send + 'static> ExclusiveSystemParam for AsyncTaskPool<'_s, T> {
     }
 
     #[inline]
-    fn get_param<'s>(
-        state: &'s mut Self::State,
-        _system_meta: &SystemMeta,
-    ) -> Self::Item<'s> {
+    fn get_param<'s>(state: &'s mut Self::State, _system_meta: &SystemMeta) -> Self::Item<'s> {
         AsyncTaskPool(state.get())
     }
 }
 
 // SAFETY: only local state is accessed
-unsafe impl<'s, T: Send + 'static> ReadOnlySystemParam
-    for AsyncTaskPool<'s, T>
-{
-}
+unsafe impl<'s, T: Send + 'static> ReadOnlySystemParam for AsyncTaskPool<'s, T> {}
 
 // SAFETY: only local state is accessed
 unsafe impl<'a, T: Send + 'static> SystemParam for AsyncTaskPool<'a, T> {
     type State = SyncCell<Vec<Option<AsyncReceiver<T>>>>;
     type Item<'w, 's> = AsyncTaskPool<'s, T>;
 
-    fn init_state(
-        _world: &mut World,
-        _system_meta: &mut SystemMeta,
-    ) -> Self::State {
+    fn init_state(_world: &mut World, _system_meta: &mut SystemMeta) -> Self::State {
         SyncCell::new(vec![])
     }
 

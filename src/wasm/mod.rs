@@ -17,10 +17,7 @@ where
     T: 'static,
 {
     /// Add a timeout to the task.
-    pub fn with_timeout(
-        mut self,
-        dur: Duration,
-    ) -> AsyncTask<Result<T, TimeoutError>> {
+    pub fn with_timeout(mut self, dur: Duration) -> AsyncTask<Result<T, TimeoutError>> {
         let (tx, rx) = oneshot::channel();
         let new_fut = async move {
             let result = timeout(dur, self.fut)
@@ -68,10 +65,7 @@ impl<T> AsyncTask<T> {
     }
 
     /// Create an async task from a future with a timeout.
-    pub fn new_with_timeout<F>(
-        dur: Duration,
-        fut: F,
-    ) -> AsyncTask<Result<T, TimeoutError>>
+    pub fn new_with_timeout<F>(dur: Duration, fut: F) -> AsyncTask<Result<T, TimeoutError>>
     where
         F: Future<Output = T> + 'static,
         F::Output: Send + 'static,
@@ -199,8 +193,7 @@ mod test {
 
     #[wasm_bindgen_test]
     async fn test_with_timeout() {
-        let task =
-            AsyncTask::<()>::pending().with_timeout(Duration::from_millis(5));
+        let task = AsyncTask::<()>::pending().with_timeout(Duration::from_millis(5));
         let (fut, mut rx) = task.into_parts();
 
         assert_eq!(None, rx.try_recv());
