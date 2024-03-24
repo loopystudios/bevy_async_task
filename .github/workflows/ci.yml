@@ -17,13 +17,10 @@ jobs:
         components: clippy,rustfmt
 
     - name: Rust Cache
-      uses: Swatinem/rust-cache@v2.7.3
+      uses: Swatinem/rust-cache@v2
 
     - name: Build | Clippy
-      uses: actions-rs/cargo@v1
-      with:
-        command: clippy
-        args: -- -D warnings
+      run: cargo clippy -- -D warnings
 
     - name: Build | Rustfmt
       run: cargo fmt --all -- --check
@@ -43,7 +40,7 @@ jobs:
         targets: wasm32-unknown-unknown
 
     - name: Rust Cache
-      uses: Swatinem/rust-cache@v2.7.3
+      uses: Swatinem/rust-cache@v2
 
     - name: Build | Check (native)
       run: cargo check --all
@@ -70,7 +67,7 @@ jobs:
       uses: jetli/wasm-pack-action@v0.4.0
 
     - name: Rust Cache
-      uses: Swatinem/rust-cache@v2.7.3
+      uses: Swatinem/rust-cache@v2
 
     - name: Build | Test (native)
       run: cargo test --all
