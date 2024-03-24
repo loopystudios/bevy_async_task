@@ -8,4 +8,4 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ## 0.1.0
 
-- Initial release. Crate was renamed to bevy_async_task from bevy-async-task and republished.
+- Initial release. Crate was renamed to `bevy_async_task` from `bevy-async-task` and republished.
