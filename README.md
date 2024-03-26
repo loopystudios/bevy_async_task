@@ -1,12 +1,19 @@
+<div align="center">
+
 # Bevy Async Task
 
+[![Discord](https://img.shields.io/discord/913957940560531456.svg?label=Loopy&logo=discord&logoColor=ffffff&color=ffffff&labelColor=000000)](https://discord.gg/zrjnQzdjCB)
 ![MIT/Apache 2.0](https://img.shields.io/badge/license-MIT%2FApache-blue.svg)
+[![Build status](https://github.com/loopystudios/bevy_async_task/workflows/CI/badge.svg)](https://github.com/loopystudios/bevy_async_task/actions)
+[![Dependency status](https://deps.rs/repo/github/loopystudios/bevy_async_task/status.svg)](https://deps.rs/repo/github/loopystudios/bevy_async_task)
 [![crates.io](https://img.shields.io/crates/v/bevy_async_task.svg)](https://crates.io/crates/bevy_async_task)
 [![docs.rs](https://img.shields.io/docsrs/bevy_async_task)](https://docs.rs/bevy_async_task)
 
-A minimum crate for ergonomic abstractions to async programming in Bevy for all platforms. This crate helps to run async tasks in the background with timeout support and retrieve results in the same system, and helps to block on futures within synchronous contexts.
+A minimum crate for ergonomic abstractions to async programming in Bevy. There is full API support for **wasm** and **native**. Android and iOS are untested (Help needed).
 
-There is full API support for **wasm** and **native**. Android and iOS are untested (Help needed).
+</div>
+
+Bevy Async Task provides Bevy system parameters to run asyncronous tasks in the background with timeout support and future output in the same system. It also provides syntactic sugar to reduce boiler plate when blocking on futures within synchronous contexts.
 
 ## Bevy version support
 
