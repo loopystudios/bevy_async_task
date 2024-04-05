@@ -39,7 +39,7 @@ async fn long_task() -> u32 {
 fn my_system(mut task_executor: AsyncTaskRunner<u32>) {
     match task_executor.poll() {
         AsnycTaskStatus::Idle => {
-            task_executor.begin(long_task());
+            task_executor.start(long_task());
             println!("Started new task!");
         }
         AsnycTaskStatus::Pending => {
