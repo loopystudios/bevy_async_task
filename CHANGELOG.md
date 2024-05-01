@@ -10,6 +10,12 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ## Unreleased
 
+## 0.1.1
+
+### fixed
+
+- READMDE re-uploaded to correct [#10](https://github.com/loopystudios/bevy_async_task/issues/10).
+
 ## 0.1.0
 
 - Initial release. Crate was renamed to `bevy_async_task` from `bevy-async-task` and republished.
