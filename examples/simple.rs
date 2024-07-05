@@ -1,5 +1,5 @@
 use async_std::task::sleep;
-use bevy::prelude::*;
+use bevy::{app::PanicHandlerPlugin, log::LogPlugin, prelude::*};
 use bevy_async_task::{AsyncTaskRunner, AsyncTaskStatus};
 use std::time::Duration;
 
@@ -16,20 +16,20 @@ fn my_system(mut task_executor: AsyncTaskRunner<u32>) {
             task_executor.start(long_task());
             // Closures also work:
             // task_executor.start(async { 5 });
-            println!("Started!");
+            info!("Started!");
         }
         AsyncTaskStatus::Pending => {
             // Waiting...
         }
         AsyncTaskStatus::Finished(v) => {
-            println!("Received {v}");
+            info!("Received {v}");
         }
     }
 }
 
 pub fn main() {
     App::new()
-        .add_plugins(MinimalPlugins)
+        .add_plugins((MinimalPlugins, LogPlugin::default(), PanicHandlerPlugin))
         .add_systems(Update, my_system)
         .run();
 }

@@ -10,9 +10,19 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ## Unreleased
 
+## 0.2.0
+
+### Changed
+
+- Updated to bevy 0.14
+
+### Fixed
+
+- Blocking example for web targets.
+
 ## 0.1.1
 
-### fixed
+### Fixed
 
 - READMDE re-uploaded to correct [#10](https://github.com/loopystudios/bevy_async_task/issues/10).
 
