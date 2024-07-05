@@ -1,28 +1,15 @@
 #![deny(missing_docs)]
 //! Ergonomic abstractions to async programming in Bevy for all platforms.
 
-use cfg_if::cfg_if;
-
 mod receiver;
+mod task;
 mod task_pool;
 mod task_runner;
 
-// Re-exports
-pub use async_std::future::TimeoutError;
-
 pub use receiver::AsyncReceiver;
+pub use task::{AsyncTask, TimeoutError};
 pub use task_pool::AsyncTaskPool;
 pub use task_runner::AsyncTaskRunner;
-
-cfg_if! {
-    if #[cfg(target_arch = "wasm32")] {
-        mod wasm;
-        pub use wasm::AsyncTask;
-    } else {
-        mod native;
-        pub use native::AsyncTask;
-    }
-}
 
 /// A poll status for an [`AsyncTask`].
 pub enum AsyncTaskStatus<T> {

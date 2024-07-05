@@ -19,12 +19,22 @@ Bevy Async Task provides Bevy system parameters to run asyncronous tasks in the 
 
 |bevy|bevy_async_task|
 |---|---|
-|0.13|0.1, main|
+|0.14|0.2, main|
+|0.13|0.1|
 |<= 0.13|Unsupported|
 
 ## Usage
 
-Please see [examples](examples/) for more.
+There are several [examples](examples/) for reference.
+
+You can also run examples on web:
+
+```shell
+# Make sure the Rust toolchain supports the wasm32 target
+rustup target add wasm32-unknown-unknown
+
+cargo run_wasm --example simple
+```
 
 ### Polling in systems
 
@@ -40,13 +50,13 @@ fn my_system(mut task_executor: AsyncTaskRunner<u32>) {
     match task_executor.poll() {
         AsnycTaskStatus::Idle => {
             task_executor.start(long_task());
-            println!("Started new task!");
+            info!("Started new task!");
         }
         AsnycTaskStatus::Pending => {
             // <Insert loading screen>
         }
         AsnycTaskStatus::Finished(v) => {
-            println!("Received {v}");
+            info!("Received {v}");
         }
     }
 }
@@ -57,7 +67,7 @@ Poll many similar tasks simultaneously with `AsyncTaskPool<T>`:
 ```rust
 fn my_system(mut task_pool: AsyncTaskPool<u64>) {
     if task_pool.is_idle() {
-        println!("Queueing 5 tasks...");
+        info!("Queueing 5 tasks...");
         for i in 1..=5 {
             task_pool.spawn(async move { // Closures work too!
                 sleep(Duration::from_millis(i * 1000)).await;
@@ -68,7 +78,7 @@ fn my_system(mut task_pool: AsyncTaskPool<u64>) {
 
     for status in task_pool.iter_poll() {
         if let AsyncTaskStatus::Finished(t) = status {
-            println!("Received {t}");
+            info!("Received {t}");
         }
     }
 }

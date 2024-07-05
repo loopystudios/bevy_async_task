@@ -1,5 +1,5 @@
 use async_std::task::sleep;
-use bevy::prelude::*;
+use bevy::{app::PanicHandlerPlugin, log::LogPlugin, prelude::*};
 use bevy_async_task::{AsyncTask, AsyncTaskRunner};
 use std::time::Duration;
 
@@ -9,7 +9,7 @@ fn system1(mut task_executor: AsyncTaskRunner<u32>) {
         sleep(Duration::from_millis(1000)).await;
         1
     });
-    println!("Received {result}");
+    info!("Received {result}");
 }
 
 /// Or block on a task, without the need of a system parameter.
@@ -19,12 +19,12 @@ fn system2() {
         2
     })
     .blocking_recv();
-    println!("Received {result}");
+    info!("Received {result}");
 }
 
 pub fn main() {
     App::new()
-        .add_plugins(MinimalPlugins)
+        .add_plugins((MinimalPlugins, LogPlugin::default(), PanicHandlerPlugin))
         .add_systems(Update, system1)
         .add_systems(Update, system2)
         .run();

@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{app::PanicHandlerPlugin, log::LogPlugin, prelude::*};
 use bevy_async_task::AsyncTask;
 use std::time::Duration;
 
@@ -9,12 +9,12 @@ fn system() {
         .blocking_recv()
         .unwrap_err();
 
-    println!("Timeout!");
+    info!("Timeout!");
 }
 
 pub fn main() {
     App::new()
-        .add_plugins(MinimalPlugins)
+        .add_plugins((MinimalPlugins, LogPlugin::default(), PanicHandlerPlugin))
         .add_systems(Update, system)
         .run();
 }
