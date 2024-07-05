@@ -4,7 +4,7 @@ use std::time::Duration;
 
 /// Use a timeout
 fn system() {
-    let _timeout = AsyncTask::<()>::pending()
+    AsyncTask::<()>::pending()
         .with_timeout(Duration::from_millis(1000))
         .blocking_recv()
         .unwrap_err();
