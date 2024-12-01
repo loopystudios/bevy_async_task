@@ -1,27 +1,29 @@
-use tokio::sync::oneshot::{self, error::TryRecvError};
+use futures::task::AtomicWaker;
+use std::sync::{
+    atomic::{AtomicBool, Ordering},
+    Arc,
+};
+use tokio::sync::oneshot::{self};
 
 /// A channel that catches an [`AsyncTask`](crate::AsyncTask) result.
+#[derive(Debug)]
 pub struct AsyncReceiver<T> {
-    pub(crate) received: bool,
-    pub(crate) buffer: oneshot::Receiver<T>,
+    pub(crate) received: Arc<AtomicBool>,
+    pub(crate) waker: Arc<AtomicWaker>, // Waker to wake the sender
+    pub(crate) receiver: oneshot::Receiver<T>,
 }
 
 impl<T> AsyncReceiver<T> {
     /// Poll the current thread waiting for the async result.
-    ///
-    /// # Panics
-    /// Panics if the sender was dropped without sending
     pub fn try_recv(&mut self) -> Option<T> {
-        match self.buffer.try_recv() {
+        match self.receiver.try_recv() {
             Ok(t) => {
-                self.received = true;
-                self.buffer.close();
+                self.receiver.close();
+                self.received.store(true, Ordering::Relaxed);
+                self.waker.wake(); // Wake the sender to drop
                 Some(t)
             }
-            Err(TryRecvError::Empty) => None,
-            Err(TryRecvError::Closed) => {
-                panic!("the sender was dropped without sending")
-            }
+            Err(_) => None,
         }
     }
 }

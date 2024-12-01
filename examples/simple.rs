@@ -1,7 +1,9 @@
+//! Simple example - this demonstrates running one async task continuously.
+
 use async_std::task::sleep;
 use bevy::{app::PanicHandlerPlugin, log::LogPlugin, prelude::*};
-use bevy_async_task::{AsyncTaskRunner, AsyncTaskStatus};
-use std::time::Duration;
+use bevy_async_task::AsyncTaskRunner;
+use std::{task::Poll, time::Duration};
 
 /// An async task that takes time to compute!
 async fn long_task() -> u32 {
@@ -9,24 +11,26 @@ async fn long_task() -> u32 {
     5
 }
 
-fn my_system(mut task_executor: AsyncTaskRunner<u32>) {
-    match task_executor.poll() {
-        AsyncTaskStatus::Idle => {
-            // Start an async task!
-            task_executor.start(long_task());
-            // Closures also work:
-            // task_executor.start(async { 5 });
-            info!("Started!");
-        }
-        AsyncTaskStatus::Pending => {
-            // Waiting...
-        }
-        AsyncTaskStatus::Finished(v) => {
+fn my_system(mut task_runner: AsyncTaskRunner<'_, u32>) {
+    if task_runner.is_idle() {
+        // Start an async task!
+        task_runner.start(long_task());
+        // Closures also work:
+        // task_executor.start(async { 5 });
+        info!("Started!");
+    }
+
+    match task_runner.poll() {
+        Poll::Ready(v) => {
             info!("Received {v}");
+        }
+        Poll::Pending => {
+            // Waiting...
         }
     }
 }
 
+/// Entry point
 pub fn main() {
     App::new()
         .add_plugins((MinimalPlugins, LogPlugin::default(), PanicHandlerPlugin))

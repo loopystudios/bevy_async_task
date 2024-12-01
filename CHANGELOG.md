@@ -10,6 +10,28 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ## Unreleased
 
+## 0.3.0
+
+### Added
+
+- Many types now implement `Debug`.
+
+### Changed
+
+- Updated to bevy 0.15.
+- `AsyncTaskStatus` was replaced with `std::task::Poll`. If you wish to check if a task runner or pool is idle, you can still do so with `<AsyncTaskRunner>.is_idle()`/`<AsyncTaskPool>.is_idle()`.
+- Replaced `TimeoutError` with a non-exhaustive `TaskError` for future proofing.
+
+### Removed
+
+- `blocking_recv()` functions were removed. You should now use `bevy::tasks::block_on(fut)`.
+- `AsyncTask.with_timeout()` until further rework is done to return this functionality. Please use `AsyncTask::new_with_duration(Dur, F)` instead.
+
+### Fixed
+
+- Timeouts now work correctly on wasm32.
+- `AsyncReceiver` now uses an `AtomicWaker` to ensure the sender is never dropped before receiving.
+
 ## 0.2.0
 
 ### Changed

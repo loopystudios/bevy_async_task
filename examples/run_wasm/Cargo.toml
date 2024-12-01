@@ -1,5 +1,6 @@
 [package]
 name = "run_wasm"
+edition = "2021"
 publish = false
 
 [dependencies]

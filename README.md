@@ -13,7 +13,7 @@ A minimum crate for ergonomic abstractions to async programming in Bevy. There i
 
 </div>
 
-Bevy Async Task provides Bevy system parameters to run asyncronous tasks in the background with timeout support and future output in the same system. It also provides syntactic sugar to reduce boiler plate when blocking on futures within synchronous contexts.
+Bevy Async Task provides Bevy system parameters to run asynchronous tasks in the background on web and native with timeouts and output capture.
 
 ## Bevy version support
 
@@ -46,17 +46,18 @@ async fn long_task() -> u32 {
     5
 }
 
-fn my_system(mut task_executor: AsyncTaskRunner<u32>) {
-    match task_executor.poll() {
-        AsyncTaskStatus::Idle => {
-            task_executor.start(long_task());
-            info!("Started new task!");
-        }
-        AsyncTaskStatus::Pending => {
-            // <Insert loading screen>
-        }
-        AsnycTaskStatus::Finished(v) => {
+fn my_system(mut task_runner: AsyncTaskRunner<u32>) {
+    if task_runner.is_idle() {
+        task_executor.start(long_task());
+        info!("Started!");
+    }
+
+    match task_runner.poll() {
+        Poll::Ready(v) => {
             info!("Received {v}");
+        }
+        Poll::Pending => {
+            // Waiting...
         }
     }
 }
@@ -84,19 +85,7 @@ fn my_system(mut task_pool: AsyncTaskPool<u64>) {
 }
 ```
 
-Also, you may use timeouts or block on an `AsyncTask<T>`:
-
-```rust
-// Blocking:
-let task = AsyncTask::new(async { 5 });
-assert_eq!(5, task.blocking_recv());
-
-// Timeout:
-let task = AsyncTask::<()>::pending().with_timeout(Duration::from_millis(10));
-assert!(task.blocking_recv().is_err());
-```
-
-Need to steer manually? Break the task into parts.
+Need to steer manually? Break the task into parts. Also see our [`cross_system` example](./examples/cross_system.rs).
 
 ```rust
 let task = AsyncTask::new(async move {

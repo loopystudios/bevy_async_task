@@ -1,4 +1,4 @@
-use crate::{AsyncReceiver, AsyncTask, AsyncTaskStatus};
+use crate::{AsyncReceiver, AsyncTask};
 use bevy::{
     ecs::{
         component::Tick,
@@ -9,12 +9,14 @@ use bevy::{
     tasks::AsyncComputeTaskPool,
     utils::synccell::SyncCell,
 };
+use std::{sync::atomic::Ordering, task::Poll};
 
 /// A Bevy [`SystemParam`] to execute [`AsyncTask`]s individually in the
 /// background.
+#[derive(Debug)]
 pub struct AsyncTaskRunner<'s, T>(pub(crate) &'s mut Option<AsyncReceiver<T>>);
 
-impl<'s, T> AsyncTaskRunner<'s, T> {
+impl<T> AsyncTaskRunner<'_, T> {
     /// Returns whether the task runner is idle.
     pub fn is_idle(&self) -> bool {
         self.0.is_none()
@@ -23,7 +25,7 @@ impl<'s, T> AsyncTaskRunner<'s, T> {
     /// Returns whether the task runner is pending (running, but not finished).
     pub fn is_pending(&self) -> bool {
         if let Some(ref rx) = self.0 {
-            !rx.received
+            !rx.received.load(Ordering::Relaxed)
         } else {
             false
         }
@@ -32,20 +34,10 @@ impl<'s, T> AsyncTaskRunner<'s, T> {
     /// Returns whether the task runner is finished.
     pub fn is_finished(&self) -> bool {
         if let Some(ref rx) = self.0 {
-            rx.received
+            rx.received.load(Ordering::Relaxed)
         } else {
             false
         }
-    }
-
-    /// Block awaiting the task result. Can only be used outside of async
-    /// contexts.
-    ///
-    /// # Panics
-    /// Panics if called within an async context.
-    pub fn blocking_recv(&mut self, task: impl Into<AsyncTask<T>>) -> T {
-        let task = task.into();
-        task.blocking_recv()
     }
 
     /// Start an async task in the background. If there is an existing task
@@ -60,25 +52,25 @@ impl<'s, T> AsyncTaskRunner<'s, T> {
         self.0.replace(rx);
     }
 
-    /// Poll the task runner for the current task status. If no task has begun,
-    /// this will return `Idle`. Possible returns are `Idle`, `Pending`, or
-    /// `Finished(T)`.
-    #[must_use]
-    pub fn poll(&mut self) -> AsyncTaskStatus<T> {
+    /// Poll the task runner for the current task status. Possible returns are `Pending` or `Ready(T)`.
+    pub fn poll(&mut self) -> Poll<T> {
         match self.0.as_mut() {
             Some(rx) => match rx.try_recv() {
                 Some(v) => {
                     self.0.take();
-                    AsyncTaskStatus::Finished(v)
+                    Poll::Ready(v)
                 }
-                None => AsyncTaskStatus::Pending,
+                None => Poll::Pending,
             },
-            None => AsyncTaskStatus::Idle,
+            None => {
+                warn!("You are polling a task runner before a task was started");
+                Poll::Pending
+            }
         }
     }
 }
 
-impl<'_s, T: Send + 'static> ExclusiveSystemParam for AsyncTaskRunner<'_s, T> {
+impl<T: Send + 'static> ExclusiveSystemParam for AsyncTaskRunner<'_, T> {
     type State = SyncCell<Option<AsyncReceiver<T>>>;
     type Item<'s> = AsyncTaskRunner<'s, T>;
 
@@ -92,10 +84,10 @@ impl<'_s, T: Send + 'static> ExclusiveSystemParam for AsyncTaskRunner<'_s, T> {
 }
 
 // SAFETY: only local state is accessed
-unsafe impl<'s, T: Send + 'static> ReadOnlySystemParam for AsyncTaskRunner<'s, T> {}
+unsafe impl<T: Send + 'static> ReadOnlySystemParam for AsyncTaskRunner<'_, T> {}
 
 // SAFETY: only local state is accessed
-unsafe impl<'a, T: Send + 'static> SystemParam for AsyncTaskRunner<'a, T> {
+unsafe impl<T: Send + 'static> SystemParam for AsyncTaskRunner<'_, T> {
     type State = SyncCell<Option<AsyncReceiver<T>>>;
     type Item<'w, 's> = AsyncTaskRunner<'s, T>;
 

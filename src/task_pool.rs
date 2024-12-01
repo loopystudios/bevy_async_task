@@ -1,4 +1,4 @@
-use crate::{AsyncReceiver, AsyncTask, AsyncTaskStatus};
+use crate::{AsyncReceiver, AsyncTask};
 use bevy::{
     ecs::{
         component::Tick,
@@ -9,12 +9,14 @@ use bevy::{
     tasks::AsyncComputeTaskPool,
     utils::synccell::SyncCell,
 };
+use std::task::Poll;
 
 /// A Bevy [`SystemParam`] to execute many similar [`AsyncTask`]s in the
 /// background simultaneously.
+#[derive(Debug)]
 pub struct AsyncTaskPool<'s, T>(pub(crate) &'s mut Vec<Option<AsyncReceiver<T>>>);
 
-impl<'s, T> AsyncTaskPool<'s, T> {
+impl<T> AsyncTaskPool<'_, T> {
     /// Returns whether the task pool is idle.
     pub fn is_idle(&self) -> bool {
         self.0.is_empty() || !self.0.iter().any(Option::is_some)
@@ -32,20 +34,20 @@ impl<'s, T> AsyncTaskPool<'s, T> {
 
     /// Iterate and poll the task pool for the current task statuses. A task can
     /// yield `Idle`, `Pending`, or `Finished(T)`.
-    pub fn iter_poll(&mut self) -> impl Iterator<Item = AsyncTaskStatus<T>> {
+    pub fn iter_poll(&mut self) -> impl Iterator<Item = Poll<T>> {
         let mut statuses = vec![];
         self.0.retain_mut(|task| match task {
             Some(rx) => {
                 if let Some(v) = rx.try_recv() {
-                    statuses.push(AsyncTaskStatus::Finished(v));
+                    statuses.push(Poll::Ready(v));
                     false
                 } else {
-                    statuses.push(AsyncTaskStatus::Pending);
+                    statuses.push(Poll::Pending);
                     true
                 }
             }
             None => {
-                statuses.push(AsyncTaskStatus::Idle);
+                statuses.push(Poll::Pending);
                 true
             }
         });
@@ -53,7 +55,7 @@ impl<'s, T> AsyncTaskPool<'s, T> {
     }
 }
 
-impl<'_s, T: Send + 'static> ExclusiveSystemParam for AsyncTaskPool<'_s, T> {
+impl<T: Send + 'static> ExclusiveSystemParam for AsyncTaskPool<'_, T> {
     type State = SyncCell<Vec<Option<AsyncReceiver<T>>>>;
     type Item<'s> = AsyncTaskPool<'s, T>;
 
@@ -68,10 +70,10 @@ impl<'_s, T: Send + 'static> ExclusiveSystemParam for AsyncTaskPool<'_s, T> {
 }
 
 // SAFETY: only local state is accessed
-unsafe impl<'s, T: Send + 'static> ReadOnlySystemParam for AsyncTaskPool<'s, T> {}
+unsafe impl<T: Send + 'static> ReadOnlySystemParam for AsyncTaskPool<'_, T> {}
 
 // SAFETY: only local state is accessed
-unsafe impl<'a, T: Send + 'static> SystemParam for AsyncTaskPool<'a, T> {
+unsafe impl<T: Send + 'static> SystemParam for AsyncTaskPool<'_, T> {
     type State = SyncCell<Vec<Option<AsyncReceiver<T>>>>;
     type Item<'w, 's> = AsyncTaskPool<'s, T>;
 
