@@ -79,7 +79,7 @@ fn my_system(mut task_pool: AsyncTaskPool<u64>) {
     }
 
     for status in task_pool.iter_poll() {
-        if let AsyncTaskStatus::Finished(t) = status {
+        if let Poll::Ready(t) = status {
             info!("Received {t}");
         }
     }
