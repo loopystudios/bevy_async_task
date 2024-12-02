@@ -2,10 +2,10 @@
 
 use async_std::{future::pending, task::sleep};
 use bevy::{app::PanicHandlerPlugin, log::LogPlugin, prelude::*};
-use bevy_async_task::{AsyncTask, AsyncTaskRunner, TaskError};
-use std::{task::Poll, time::Duration};
+use bevy_async_task::{AsyncTask, AsyncTaskRunner, Duration, TaskError};
+use std::task::Poll;
 
-fn system_does_timeout(mut task_executor: AsyncTaskRunner<'_, Result<(), TaskError>>) {
+fn system_does_timeout(mut task_executor: AsyncTaskRunner<'_, ()>) {
     if task_executor.is_idle() {
         let timeout_task = AsyncTask::new_with_timeout(Duration::from_secs(1), pending());
         task_executor.start(timeout_task);
@@ -23,7 +23,7 @@ fn system_does_timeout(mut task_executor: AsyncTaskRunner<'_, Result<(), TaskErr
     }
 }
 
-fn system_doesnt_timeout(mut task_executor: AsyncTaskRunner<'_, Result<u32, TaskError>>) {
+fn system_doesnt_timeout(mut task_executor: AsyncTaskRunner<'_, u32>) {
     if task_executor.is_idle() {
         let timeout_task = AsyncTask::new_with_timeout(Duration::from_secs(10), async {
             sleep(Duration::from_secs(2)).await;

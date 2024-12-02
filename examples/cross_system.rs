@@ -3,8 +3,7 @@
 
 use async_std::task::sleep;
 use bevy::{app::PanicHandlerPlugin, log::LogPlugin, prelude::*, tasks::AsyncComputeTaskPool};
-use bevy_async_task::{AsyncReceiver, AsyncTask};
-use std::time::Duration;
+use bevy_async_task::{AsyncReceiver, AsyncTask, Duration};
 
 #[derive(Resource, DerefMut, Deref, Default)]
 struct MyTask(Option<AsyncReceiver<u32>>);
@@ -16,7 +15,7 @@ async fn long_task() -> u32 {
 }
 
 fn system1_start(mut my_task: ResMut<'_, MyTask>) {
-    let (fut, receiver) = AsyncTask::new(long_task()).into_parts();
+    let (fut, receiver) = AsyncTask::new(long_task()).build();
     my_task.replace(receiver);
     AsyncComputeTaskPool::get().spawn_local(fut).detach();
     info!("Started!");
@@ -27,12 +26,13 @@ fn system2_poll(mut my_task: ResMut<'_, MyTask>) {
         return;
     };
     match receiver.try_recv() {
-        Some(v) => {
+        Some(Ok(v)) => {
             info!("Received {v}");
         }
         None => {
             // Waiting...
         }
+        _ => unreachable!(),
     }
 }
 

@@ -2,8 +2,8 @@
 
 use async_std::task::sleep;
 use bevy::{app::PanicHandlerPlugin, log::LogPlugin, prelude::*};
-use bevy_async_task::AsyncTaskPool;
-use std::{task::Poll, time::Duration};
+use bevy_async_task::{AsyncTaskPool, Duration};
+use std::task::Poll;
 
 fn system1(mut task_pool: AsyncTaskPool<'_, u64>) {
     if task_pool.is_idle() {
@@ -17,7 +17,7 @@ fn system1(mut task_pool: AsyncTaskPool<'_, u64>) {
     }
 
     for status in task_pool.iter_poll() {
-        if let Poll::Ready(t) = status {
+        if let Poll::Ready(Ok(t)) = status {
             info!("Received {t}");
         }
     }

@@ -21,12 +21,13 @@ fn my_system(mut task_runner: AsyncTaskRunner<'_, u32>) {
     }
 
     match task_runner.poll() {
-        Poll::Ready(v) => {
+        Poll::Ready(Ok(v)) => {
             info!("Received {v}");
         }
         Poll::Pending => {
             // Waiting...
         }
+        _ => unreachable!(),
     }
 }
 
