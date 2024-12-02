@@ -80,12 +80,10 @@ bevy = { version = "0.15.0", default-features = false, features = [
 async-std = "1.13.0"
 thiserror = "2.0.3"
 futures = "0.3.31"
+web-time = "1.1.0"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 async-compat = "0.2.4"
-
-[target.'cfg(target_arch = "wasm32")'.dependencies]
-web-time = "1.1.0"
 
 [dev-dependencies]
 futures-timer = "3.0.3"
