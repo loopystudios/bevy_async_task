@@ -10,6 +10,18 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ## Unreleased
 
+## 0.4.0
+
+### Added
+
+- `AsyncTask.with_timeout()` has been added back.
+
+### Changed
+
+- `poll()` and `iter_poll()` now return a `Result<T, TaskError>`.
+- `std::time::Duration` has been replaced with `web_time::Duration`.
+- `into_parts()` has been replaced with `build()`.
+
 ## 0.3.0
 
 ### Added

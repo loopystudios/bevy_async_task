@@ -19,7 +19,7 @@ Bevy Async Task provides Bevy system parameters to run asynchronous tasks in the
 
 |bevy|bevy_async_task|
 |---|---|
-|0.15|0.3, main|
+|0.15|0.3-0.4, main|
 |0.14|0.2|
 |0.13|0.1|
 |<= 0.13|Unsupported|
@@ -55,7 +55,7 @@ fn my_system(mut task_runner: AsyncTaskRunner<u32>) {
 
     match task_runner.poll() {
         Poll::Ready(v) => {
-            info!("Received {v}");
+            info!("Received {v:?}");
         }
         Poll::Pending => {
             // Waiting...
@@ -79,36 +79,14 @@ fn my_system(mut task_pool: AsyncTaskPool<u64>) {
     }
 
     for status in task_pool.iter_poll() {
-        if let Poll::Ready(t) = status {
-            info!("Received {t}");
+        if let Poll::Ready(v) = status {
+            info!("Received {v:?}");
         }
     }
 }
 ```
 
-Need to steer manually? Break the task into parts. Also see our [`cross_system` example](./examples/cross_system.rs).
-
-```rust
-let task = AsyncTask::new(async move {
-    sleep(Duration::from_millis(1000)).await;
-    5
-});
-// Break the task into a runnable future and a receiver
-let (fut, mut rx) = task.into_parts();
-// The receiver will always be `None` until it is polled by Bevy.
-assert_eq!(None, rx.try_recv());
-// Run the future
-let task_pool = bevy::prelude::AsyncComputeTaskPool::get();
-let task = task_pool.spawn(fut);
-task.detach(); // Forget and run in background
-// Spin-lock, waiting for the result
-let result = loop {
-    if let Some(v) = rx.try_recv() {
-        break v;
-    }
-};
-assert_eq!(5, result);
-```
+We also have a [`cross_system` example](./examples/cross_system.rs).
 
 ## Community
 
