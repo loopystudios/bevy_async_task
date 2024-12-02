@@ -1,4 +1,4 @@
-use crate::{AsyncReceiver, AsyncTask};
+use crate::{AsyncReceiver, AsyncTask, TaskError};
 use bevy::{
     ecs::{
         component::Tick,
@@ -7,46 +7,39 @@ use bevy::{
     },
     prelude::*,
     tasks::AsyncComputeTaskPool,
-    utils::synccell::SyncCell,
+    utils::{synccell::SyncCell, ConditionalSend},
 };
 use std::task::Poll;
 
 /// A Bevy [`SystemParam`] to execute many similar [`AsyncTask`]s in the
 /// background simultaneously.
 #[derive(Debug)]
-pub struct AsyncTaskPool<'s, T>(pub(crate) &'s mut Vec<Option<AsyncReceiver<T>>>);
+pub struct AsyncTaskPool<'s, T>(pub(crate) &'s mut Vec<AsyncReceiver<T>>);
 
-impl<T> AsyncTaskPool<'_, T> {
+impl<T: ConditionalSend + 'static> AsyncTaskPool<'_, T> {
     /// Returns whether the task pool is idle.
     pub fn is_idle(&self) -> bool {
-        self.0.is_empty() || !self.0.iter().any(Option::is_some)
+        self.0.is_empty()
     }
 
     /// Spawn an async task in the background.
     pub fn spawn(&mut self, task: impl Into<AsyncTask<T>>) {
         let task = task.into();
-        let (fut, rx) = task.into_parts();
+        let (fut, rx) = task.build();
         let task_pool = AsyncComputeTaskPool::get();
         let handle = task_pool.spawn(fut);
         handle.detach();
-        self.0.push(Some(rx));
+        self.0.push(rx);
     }
 
-    /// Iterate and poll the task pool for the current task statuses. A task can
-    /// yield `Idle`, `Pending`, or `Finished(T)`.
-    pub fn iter_poll(&mut self) -> impl Iterator<Item = Poll<T>> {
+    /// Iterate and poll the task pool for the current task statuses.
+    pub fn iter_poll(&mut self) -> impl Iterator<Item = Poll<Result<T, TaskError>>> {
         let mut statuses = vec![];
-        self.0.retain_mut(|task| match task {
-            Some(rx) => {
-                if let Some(v) = rx.try_recv() {
-                    statuses.push(Poll::Ready(v));
-                    false
-                } else {
-                    statuses.push(Poll::Pending);
-                    true
-                }
-            }
-            None => {
+        self.0.retain_mut(|receiver| {
+            if let Some(v) = receiver.try_recv() {
+                statuses.push(Poll::Ready(v));
+                false
+            } else {
                 statuses.push(Poll::Pending);
                 true
             }
@@ -56,7 +49,7 @@ impl<T> AsyncTaskPool<'_, T> {
 }
 
 impl<T: Send + 'static> ExclusiveSystemParam for AsyncTaskPool<'_, T> {
-    type State = SyncCell<Vec<Option<AsyncReceiver<T>>>>;
+    type State = SyncCell<Vec<AsyncReceiver<T>>>;
     type Item<'s> = AsyncTaskPool<'s, T>;
 
     fn init(_world: &mut World, _system_meta: &mut SystemMeta) -> Self::State {
@@ -74,7 +67,7 @@ unsafe impl<T: Send + 'static> ReadOnlySystemParam for AsyncTaskPool<'_, T> {}
 
 // SAFETY: only local state is accessed
 unsafe impl<T: Send + 'static> SystemParam for AsyncTaskPool<'_, T> {
-    type State = SyncCell<Vec<Option<AsyncReceiver<T>>>>;
+    type State = SyncCell<Vec<AsyncReceiver<T>>>;
     type Item<'w, 's> = AsyncTaskPool<'s, T>;
 
     fn init_state(_world: &mut World, _system_meta: &mut SystemMeta) -> Self::State {

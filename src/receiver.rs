@@ -1,3 +1,4 @@
+use crate::TaskError;
 use futures::task::AtomicWaker;
 use std::sync::{
     atomic::{AtomicBool, Ordering},
@@ -10,12 +11,12 @@ use tokio::sync::oneshot::{self};
 pub struct AsyncReceiver<T> {
     pub(crate) received: Arc<AtomicBool>,
     pub(crate) waker: Arc<AtomicWaker>, // Waker to wake the sender
-    pub(crate) receiver: oneshot::Receiver<T>,
+    pub(crate) receiver: oneshot::Receiver<Result<T, TaskError>>,
 }
 
 impl<T> AsyncReceiver<T> {
     /// Poll the current thread waiting for the async result.
-    pub fn try_recv(&mut self) -> Option<T> {
+    pub fn try_recv(&mut self) -> Option<Result<T, TaskError>> {
         match self.receiver.try_recv() {
             Ok(t) => {
                 self.receiver.close();

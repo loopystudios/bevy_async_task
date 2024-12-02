@@ -1,4 +1,4 @@
-use crate::{AsyncReceiver, AsyncTask};
+use crate::{AsyncReceiver, AsyncTask, TaskError};
 use bevy::{
     ecs::{
         component::Tick,
@@ -7,7 +7,7 @@ use bevy::{
     },
     prelude::*,
     tasks::AsyncComputeTaskPool,
-    utils::synccell::SyncCell,
+    utils::{synccell::SyncCell, ConditionalSend},
 };
 use std::{sync::atomic::Ordering, task::Poll};
 
@@ -16,7 +16,7 @@ use std::{sync::atomic::Ordering, task::Poll};
 #[derive(Debug)]
 pub struct AsyncTaskRunner<'s, T>(pub(crate) &'s mut Option<AsyncReceiver<T>>);
 
-impl<T> AsyncTaskRunner<'_, T> {
+impl<T: ConditionalSend + 'static> AsyncTaskRunner<'_, T> {
     /// Returns whether the task runner is idle.
     pub fn is_idle(&self) -> bool {
         self.0.is_none()
@@ -45,15 +45,16 @@ impl<T> AsyncTaskRunner<'_, T> {
     /// need to run multiple tasks, use the [`AsyncTaskPool`].
     pub fn start(&mut self, task: impl Into<AsyncTask<T>>) {
         let task = task.into();
-        let (fut, rx) = task.into_parts();
+        let (fut, rx) = task.build();
         let task_pool = AsyncComputeTaskPool::get();
         let handle = task_pool.spawn(fut);
         handle.detach();
         self.0.replace(rx);
     }
 
-    /// Poll the task runner for the current task status. Possible returns are `Pending` or `Ready(T)`.
-    pub fn poll(&mut self) -> Poll<T> {
+    /// Poll the task runner for the current task status. Possible returns are `Pending` or
+    /// `Ready(T)`.
+    pub fn poll(&mut self) -> Poll<Result<T, TaskError>> {
         match self.0.as_mut() {
             Some(rx) => match rx.try_recv() {
                 Some(v) => {

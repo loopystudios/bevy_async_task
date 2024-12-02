@@ -11,3 +11,6 @@ pub use receiver::AsyncReceiver;
 pub use task::AsyncTask;
 pub use task_pool::AsyncTaskPool;
 pub use task_runner::AsyncTaskRunner;
+
+// Vendor re-exports
+pub use web_time::Duration;
