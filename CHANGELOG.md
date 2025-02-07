@@ -10,6 +10,12 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ## Unreleased
 
+## 0.4.1
+
+### Fixed
+
+- There is no longer repetitive console warnings about polling tasks.
+
 ## 0.4.0
 
 ### Added

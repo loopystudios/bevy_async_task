@@ -63,10 +63,7 @@ impl<T: ConditionalSend + 'static> AsyncTaskRunner<'_, T> {
                 }
                 None => Poll::Pending,
             },
-            None => {
-                warn!("You are polling a task runner before a task was started");
-                Poll::Pending
-            }
+            None => Poll::Pending,
         }
     }
 }
