@@ -6,11 +6,11 @@ use bevy::utils::{ConditionalSend, ConditionalSendFuture};
 use futures::task::AtomicWaker;
 use std::{
     fmt::Debug,
-    future::{pending, Future},
+    future::{Future, pending},
     pin::Pin,
     sync::{
-        atomic::{AtomicBool, Ordering},
         Arc,
+        atomic::{AtomicBool, Ordering},
     },
     task::Poll,
 };
@@ -228,7 +228,7 @@ where
 #[cfg(test)]
 mod test {
     use super::*;
-    use futures::{pin_mut, FutureExt};
+    use futures::{FutureExt, pin_mut};
     use futures_timer::Delay;
     use std::time::Duration;
     use tokio::select;

@@ -7,7 +7,7 @@ use bevy::{
     },
     prelude::*,
     tasks::AsyncComputeTaskPool,
-    utils::{synccell::SyncCell, ConditionalSend},
+    utils::{ConditionalSend, synccell::SyncCell},
 };
 use std::task::Poll;
 

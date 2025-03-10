@@ -1,7 +1,7 @@
 use futures::task::AtomicWaker;
 use std::sync::{
-    atomic::{AtomicBool, Ordering},
     Arc,
+    atomic::{AtomicBool, Ordering},
 };
 use tokio::sync::oneshot::{self};
 
