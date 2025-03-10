@@ -10,6 +10,15 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ## Unreleased
 
+## 0.5.0
+
+### Changed
+
+- Updated to rust 2024 edition.
+- Split `AsyncTaskRunner` into `TimedTaskRunner` and `TaskRunner`. The timed variant polls timeouts.
+- Split `AsyncTaskPool` into `TimedTaskPool` and `TaskPool`. The timed variant polls timeouts.
+- `AsyncTask::build` has been renamed to `AsyncTask::split`.
+
 ## 0.4.1
 
 ### Fixed

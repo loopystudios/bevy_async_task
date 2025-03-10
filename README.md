@@ -19,7 +19,7 @@ Bevy Async Task provides Bevy system parameters to run asynchronous tasks in the
 
 |bevy|bevy_async_task|
 |---|---|
-|0.15|0.3-0.4, main|
+|0.15|0.3-0.5, main|
 |0.14|0.2|
 |0.13|0.1|
 |<= 0.13|Unsupported|
@@ -39,7 +39,7 @@ cargo run_wasm --example simple
 
 ### Polling in systems
 
-Poll one task at a time with `AsyncTaskRunner<T>`:
+Poll one task at a time with `TaskRunner<T>`:
 
 ```rust
 async fn long_task() -> u32 {
@@ -47,7 +47,7 @@ async fn long_task() -> u32 {
     5
 }
 
-fn my_system(mut task_runner: AsyncTaskRunner<u32>) {
+fn my_system(mut task_runner: TaskRunner<u32>) {
     if task_runner.is_idle() {
         task_executor.start(long_task());
         info!("Started!");
@@ -64,10 +64,10 @@ fn my_system(mut task_runner: AsyncTaskRunner<u32>) {
 }
 ```
 
-Poll many similar tasks simultaneously with `AsyncTaskPool<T>`:
+Poll many similar tasks simultaneously with `TaskPool<T>`:
 
 ```rust
-fn my_system(mut task_pool: AsyncTaskPool<u64>) {
+fn my_system(mut task_pool: TaskPool<u64>) {
     if task_pool.is_idle() {
         info!("Queueing 5 tasks...");
         for i in 1..=5 {

@@ -15,7 +15,7 @@ async fn long_task() -> u32 {
 }
 
 fn system1_start(mut my_task: ResMut<'_, MyTask>) {
-    let (fut, receiver) = AsyncTask::new(long_task()).build();
+    let (fut, receiver) = AsyncTask::new(long_task()).split();
     my_task.replace(receiver);
     AsyncComputeTaskPool::get().spawn_local(fut).detach();
     info!("Started!");
@@ -26,13 +26,12 @@ fn system2_poll(mut my_task: ResMut<'_, MyTask>) {
         return;
     };
     match receiver.try_recv() {
-        Some(Ok(v)) => {
+        Some(v) => {
             info!("Received {v}");
         }
         None => {
             // Waiting...
         }
-        _ => unreachable!(),
     }
 }
 

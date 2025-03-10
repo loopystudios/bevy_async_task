@@ -10,8 +10,8 @@ repository = "https://github.com/loopystudios/bevy_async_task"
 authors = ["Spencer C. Imbleau"]
 keywords = ["gamedev", "async"]
 categories = ["game-development", "asynchronous"]
-version = "0.4.1"
-edition = "2021"
+version = "0.5.0"
+edition = "2024"
 
 [lints]
 # LINEBENDER LINT SET - Cargo.toml - v2

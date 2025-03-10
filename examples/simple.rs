@@ -2,7 +2,7 @@
 
 use async_std::task::sleep;
 use bevy::{app::PanicHandlerPlugin, log::LogPlugin, prelude::*};
-use bevy_async_task::AsyncTaskRunner;
+use bevy_async_task::TaskRunner;
 use std::{task::Poll, time::Duration};
 
 /// An async task that takes time to compute!
@@ -11,7 +11,7 @@ async fn long_task() -> u32 {
     5
 }
 
-fn my_system(mut task_runner: AsyncTaskRunner<'_, u32>) {
+fn my_system(mut task_runner: TaskRunner<'_, u32>) {
     if task_runner.is_idle() {
         // Start an async task!
         task_runner.start(long_task());
@@ -21,13 +21,12 @@ fn my_system(mut task_runner: AsyncTaskRunner<'_, u32>) {
     }
 
     match task_runner.poll() {
-        Poll::Ready(Ok(v)) => {
+        Poll::Ready(v) => {
             info!("Received {v}");
         }
         Poll::Pending => {
             // Waiting...
         }
-        _ => unreachable!(),
     }
 }
 

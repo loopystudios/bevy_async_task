@@ -2,10 +2,10 @@
 
 use async_std::task::sleep;
 use bevy::{app::PanicHandlerPlugin, log::LogPlugin, prelude::*};
-use bevy_async_task::{AsyncTaskPool, Duration};
+use bevy_async_task::{Duration, TaskPool};
 use std::task::Poll;
 
-fn system1(mut task_pool: AsyncTaskPool<'_, u64>) {
+fn system1(mut task_pool: TaskPool<'_, u64>) {
     if task_pool.is_idle() {
         info!("Queueing 5 tasks...");
         for i in 1..=5 {
@@ -17,7 +17,7 @@ fn system1(mut task_pool: AsyncTaskPool<'_, u64>) {
     }
 
     for status in task_pool.iter_poll() {
-        if let Poll::Ready(Ok(t)) = status {
+        if let Poll::Ready(t) = status {
             info!("Received {t}");
         }
     }

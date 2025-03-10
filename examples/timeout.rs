@@ -1,13 +1,13 @@
 //! Timeout example - this demonstrates running one task with a timeout continuously.
 
-use async_std::{future::pending, task::sleep};
+use async_std::task::sleep;
 use bevy::{app::PanicHandlerPlugin, log::LogPlugin, prelude::*};
-use bevy_async_task::{AsyncTask, AsyncTaskRunner, Duration, TaskError};
+use bevy_async_task::{Duration, TaskError, TimedAsyncTask, TimedTaskRunner};
 use std::task::Poll;
 
-fn system_does_timeout(mut task_executor: AsyncTaskRunner<'_, ()>) {
+fn system_does_timeout(mut task_executor: TimedTaskRunner<'_, ()>) {
     if task_executor.is_idle() {
-        let timeout_task = AsyncTask::new_with_timeout(Duration::from_secs(1), pending());
+        let timeout_task = TimedAsyncTask::pending().with_timeout(Duration::from_secs(2));
         task_executor.start(timeout_task);
         info!("Started A!");
     }
@@ -23,13 +23,17 @@ fn system_does_timeout(mut task_executor: AsyncTaskRunner<'_, ()>) {
     }
 }
 
-fn system_doesnt_timeout(mut task_executor: AsyncTaskRunner<'_, u32>) {
+fn system_doesnt_timeout(mut task_executor: TimedTaskRunner<'_, u32>, mut counter: Local<'_, u32>) {
     if task_executor.is_idle() {
-        let timeout_task = AsyncTask::new_with_timeout(Duration::from_secs(10), async {
-            sleep(Duration::from_secs(2)).await;
-            5
-        });
-        task_executor.start(timeout_task);
+        let task = {
+            *counter += 1;
+            let next = *counter;
+            async move {
+                sleep(Duration::from_secs(2)).await;
+                next
+            }
+        };
+        task_executor.start(task);
         info!("Started B!");
     }
 
@@ -40,7 +44,7 @@ fn system_doesnt_timeout(mut task_executor: AsyncTaskRunner<'_, u32>) {
         Poll::Pending => {
             // Waiting...
         }
-        _ => unreachable!(),
+        e => panic!("{e:?}"),
     }
 }
 
