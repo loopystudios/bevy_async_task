@@ -6,8 +6,8 @@ use bevy::{
         world::unsafe_world_cell::UnsafeWorldCell,
     },
     prelude::*,
-    tasks::AsyncComputeTaskPool,
-    utils::{ConditionalSend, synccell::SyncCell},
+    tasks::{AsyncComputeTaskPool, ConditionalSend},
+    utils::synccell::SyncCell,
 };
 use std::{
     ops::{Deref, DerefMut},

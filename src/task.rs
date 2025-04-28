@@ -2,7 +2,7 @@ use crate::{AsyncReceiver, Duration, TaskError};
 #[cfg(not(target_arch = "wasm32"))]
 use async_compat::CompatExt;
 use async_std::future::timeout;
-use bevy::utils::{ConditionalSend, ConditionalSendFuture};
+use bevy::tasks::{ConditionalSend, ConditionalSendFuture};
 use futures::task::AtomicWaker;
 use std::{
     fmt::Debug,

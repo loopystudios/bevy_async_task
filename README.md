@@ -19,7 +19,8 @@ Bevy Async Task provides Bevy system parameters to run asynchronous tasks in the
 
 |bevy|bevy_async_task|
 |---|---|
-|0.15|0.3-0.5, main|
+|0.16|0.6, main|
+|0.15|0.3-0.5|
 |0.14|0.2|
 |0.13|0.1|
 |<= 0.13|Unsupported|
@@ -90,7 +91,7 @@ We also have a [`cross_system` example](./examples/cross_system.rs).
 
 ## Community
 
-All Loopy projects and development happens in the [Loopy Discord](https://discord.gg/zrjnQzdjCB). The discord is open to the public.
+All Loopy projects and development happens in the [Loopy Discord](https://discord.gg/KSfKceUKde). The discord is open to the public.
 
 Contributions are welcome by pull request. The [Rust code of conduct](https://www.rust-lang.org/policies/code-of-conduct) applies.
 

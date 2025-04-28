@@ -10,7 +10,7 @@ repository = "https://github.com/loopystudios/bevy_async_task"
 authors = ["Spencer C. Imbleau"]
 keywords = ["gamedev", "async"]
 categories = ["game-development", "asynchronous"]
-version = "0.5.0"
+version = "0.6.0"
 edition = "2024"
 
 [lints]
@@ -73,12 +73,12 @@ clippy.wildcard_dependencies = "warn"
 [lib]
 
 [dependencies]
-tokio = { version = "1.41.1", default-features = false, features = ["sync"] }
-bevy = { version = "0.15.0", default-features = false, features = [
+tokio = { version = "1.44.2", default-features = false, features = ["sync"] }
+bevy = { version = "0.16.0", default-features = false, features = [
   "multi_threaded",
 ] }
-async-std = "1.13.0"
-thiserror = "2.0.3"
+async-std = "1.13.1"
+thiserror = "2.0.12"
 futures = "0.3.31"
 web-time = "1.1.0"
 
@@ -89,10 +89,27 @@ async-compat = "0.2.4"
 futures-timer = "3.0.3"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
-tokio = { version = "1.41.1", features = ["full"] }
+tokio = { version = "1.44.2", features = ["full"] }
 
 [target.'cfg(target_arch = "wasm32")'.dev-dependencies]
-wasm-bindgen-futures = "0.4.47"
-wasm-bindgen-test = "0.3.47"
-js-sys = "0.3.74"
-wasm-bindgen = "0.2.97"
+wasm-bindgen-futures = "0.4.50"
+wasm-bindgen-test = "0.3.50"
+js-sys = "0.3.77"
+wasm-bindgen = "0.2.100"
+
+
+[[example]]
+name = "cross_system"
+required-features = ["bevy/bevy_log"]
+
+[[example]]
+name = "pool"
+required-features = ["bevy/bevy_log"]
+
+[[example]]
+name = "simple"
+required-features = ["bevy/bevy_log"]
+
+[[example]]
+name = "timeout"
+required-features = ["bevy/bevy_log"]
