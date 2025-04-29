@@ -1,8 +1,4 @@
-/// Errors that may occur from running asynchronous tasks.
-#[derive(thiserror::Error, Debug, Clone, PartialEq, Eq)]
-#[non_exhaustive]
-pub enum TaskError {
-    /// Timeout occurred.
-    #[error(transparent)]
-    Timeout(#[from] async_std::future::TimeoutError),
-}
+/// A timeout occurred on a timed asyncronous task.
+#[derive(thiserror::Error, Debug, PartialEq, Eq)]
+#[error("the future has timed out")]
+pub struct TimeoutError;

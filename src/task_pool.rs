@@ -1,4 +1,4 @@
-use crate::{AsyncReceiver, AsyncTask, TaskError, TimedAsyncTask};
+use crate::{AsyncReceiver, AsyncTask, TimedAsyncTask, TimeoutError};
 use bevy::{
     ecs::{
         component::Tick,
@@ -86,7 +86,7 @@ unsafe impl<T: Send + 'static> SystemParam for TaskPool<'_, T> {
 /// A Bevy [`SystemParam`] to execute many similar [`AsyncTask`]s in the
 /// background simultaneously.
 #[derive(Debug)]
-pub struct TimedTaskPool<'s, T>(pub(crate) &'s mut Vec<AsyncReceiver<Result<T, TaskError>>>);
+pub struct TimedTaskPool<'s, T>(pub(crate) &'s mut Vec<AsyncReceiver<Result<T, TimeoutError>>>);
 
 impl<T: ConditionalSend + 'static> TimedTaskPool<'_, T> {
     /// Returns whether the task pool is idle.
@@ -105,7 +105,7 @@ impl<T: ConditionalSend + 'static> TimedTaskPool<'_, T> {
     }
 
     /// Iterate and poll the task pool for the current task statuses.
-    pub fn iter_poll(&mut self) -> impl Iterator<Item = Poll<Result<T, TaskError>>> {
+    pub fn iter_poll(&mut self) -> impl Iterator<Item = Poll<Result<T, TimeoutError>>> {
         let mut statuses = vec![];
         self.0.retain_mut(|receiver| {
             if let Some(v) = receiver.try_recv() {
@@ -121,7 +121,7 @@ impl<T: ConditionalSend + 'static> TimedTaskPool<'_, T> {
 }
 
 impl<T: Send + 'static> ExclusiveSystemParam for TimedTaskPool<'_, T> {
-    type State = SyncCell<Vec<AsyncReceiver<Result<T, TaskError>>>>;
+    type State = SyncCell<Vec<AsyncReceiver<Result<T, TimeoutError>>>>;
     type Item<'s> = TimedTaskPool<'s, T>;
 
     fn init(_world: &mut World, _system_meta: &mut SystemMeta) -> Self::State {
@@ -137,7 +137,7 @@ impl<T: Send + 'static> ExclusiveSystemParam for TimedTaskPool<'_, T> {
 unsafe impl<T: Send + 'static> ReadOnlySystemParam for TimedTaskPool<'_, T> {}
 // SAFETY: only local state is accessed
 unsafe impl<T: Send + 'static> SystemParam for TimedTaskPool<'_, T> {
-    type State = SyncCell<Vec<AsyncReceiver<Result<T, TaskError>>>>;
+    type State = SyncCell<Vec<AsyncReceiver<Result<T, TimeoutError>>>>;
     type Item<'w, 's> = TimedTaskPool<'s, T>;
 
     fn init_state(_world: &mut World, _system_meta: &mut SystemMeta) -> Self::State {

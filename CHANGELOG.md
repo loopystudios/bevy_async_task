@@ -10,6 +10,16 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ## Unreleased
 
+## 0.7.0
+
+### Changed
+
+- The `TaskError` enum has been replaced with a `TimeoutError` struct.
+
+### Fixed
+
+- A panic was fixed on WASM when the timeout exceeded numerical bounds.
+
 ## 0.6.0
 
 ### Changed
@@ -39,7 +49,7 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ### Changed
 
-- `poll()` and `iter_poll()` now return a `Result<T, TaskError>`.
+- `poll()` and `iter_poll()` now return a `Result<T, TimeoutError>`.
 - `std::time::Duration` has been replaced with `web_time::Duration`.
 - `into_parts()` has been replaced with `build()`.
 
@@ -53,7 +63,7 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 - Updated to bevy 0.15.
 - `AsyncTaskStatus` was replaced with `std::task::Poll`. If you wish to check if a task runner or pool is idle, you can still do so with `<AsyncTaskRunner>.is_idle()`/`<AsyncTaskPool>.is_idle()`.
-- Replaced `TimeoutError` with a non-exhaustive `TaskError` for future proofing.
+- Replaced `TimeoutError` with a non-exhaustive `TimeoutError` for future proofing.
 
 ### Removed
 

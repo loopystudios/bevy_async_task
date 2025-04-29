@@ -1,4 +1,4 @@
-use crate::{AsyncReceiver, AsyncTask, TaskError, TimedAsyncTask};
+use crate::{AsyncReceiver, AsyncTask, TimedAsyncTask, TimeoutError};
 use bevy::{
     ecs::{
         component::Tick,
@@ -123,10 +123,12 @@ unsafe impl<T: Send + 'static> SystemParam for TaskRunner<'_, T> {
 
 /// A Bevy [`SystemParam`] to execute async tasks in the background with a timeout.
 #[derive(Debug)]
-pub struct TimedTaskRunner<'s, T>(pub(crate) &'s mut Option<AsyncReceiver<Result<T, TaskError>>>);
+pub struct TimedTaskRunner<'s, T>(
+    pub(crate) &'s mut Option<AsyncReceiver<Result<T, TimeoutError>>>,
+);
 
 impl<T> Deref for TimedTaskRunner<'_, T> {
-    type Target = Option<AsyncReceiver<Result<T, TaskError>>>;
+    type Target = Option<AsyncReceiver<Result<T, TimeoutError>>>;
 
     fn deref(&self) -> &Self::Target {
         self.0
@@ -179,7 +181,7 @@ where
 
     /// Poll the task runner for the current task status. Possible returns are `Pending` or
     /// `Ready(T)`.
-    pub fn poll(&mut self) -> Poll<Result<T, TaskError>> {
+    pub fn poll(&mut self) -> Poll<Result<T, TimeoutError>> {
         match self.0.as_mut() {
             Some(rx) => match rx.try_recv() {
                 Some(v) => {
@@ -194,7 +196,7 @@ where
 }
 
 impl<T: Send + 'static> ExclusiveSystemParam for TimedTaskRunner<'_, T> {
-    type State = SyncCell<Option<AsyncReceiver<Result<T, TaskError>>>>;
+    type State = SyncCell<Option<AsyncReceiver<Result<T, TimeoutError>>>>;
     type Item<'s> = TimedTaskRunner<'s, T>;
 
     fn init(_world: &mut World, _system_meta: &mut SystemMeta) -> Self::State {
@@ -209,7 +211,7 @@ impl<T: Send + 'static> ExclusiveSystemParam for TimedTaskRunner<'_, T> {
 unsafe impl<T: Send + 'static> ReadOnlySystemParam for TimedTaskRunner<'_, T> {}
 // SAFETY: only local state is accessed
 unsafe impl<T: Send + 'static> SystemParam for TimedTaskRunner<'_, T> {
-    type State = SyncCell<Option<AsyncReceiver<Result<T, TaskError>>>>;
+    type State = SyncCell<Option<AsyncReceiver<Result<T, TimeoutError>>>>;
     type Item<'w, 's> = TimedTaskRunner<'s, T>;
 
     fn init_state(_world: &mut World, _system_meta: &mut SystemMeta) -> Self::State {

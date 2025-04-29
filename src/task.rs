@@ -1,7 +1,6 @@
-use crate::{AsyncReceiver, Duration, TaskError};
+use crate::{AsyncReceiver, Duration, error::TimeoutError, timeout::timeout};
 #[cfg(not(target_arch = "wasm32"))]
 use async_compat::CompatExt;
-use async_std::future::timeout;
 use bevy::tasks::{ConditionalSend, ConditionalSendFuture};
 use futures::task::AtomicWaker;
 use std::{
@@ -159,7 +158,7 @@ where
         self,
     ) -> (
         Pin<Box<impl Future<Output = ()>>>,
-        AsyncReceiver<Result<T, TaskError>>,
+        AsyncReceiver<Result<T, TimeoutError>>,
     ) {
         let (tx, rx) = oneshot::channel();
         let waker = Arc::new(AtomicWaker::new());
@@ -169,13 +168,9 @@ where
             let received = received.clone();
             async move {
                 #[cfg(target_arch = "wasm32")]
-                let result = timeout(self.timeout, self.fut)
-                    .await
-                    .map_err(TaskError::Timeout);
+                let result = timeout(self.timeout, self.fut).await;
                 #[cfg(not(target_arch = "wasm32"))]
-                let result = timeout(self.timeout, self.fut.compat())
-                    .await
-                    .map_err(TaskError::Timeout);
+                let result = timeout(self.timeout, self.fut.compat()).await;
 
                 if let Ok(()) = tx.send(result) {
                     // Wait for the receiver to get the result before dropping.
@@ -297,7 +292,7 @@ mod test {
             select! {
                 _ = (&mut fetch).fuse() => {
                     if let Some(v) = rx.try_recv() {
-                        if matches!(v, Err(TaskError::Timeout(_))) {
+                        if matches!(v, Err(TimeoutError)) {
                             // Good ending
                             break 'result;
                         } else {
@@ -331,7 +326,7 @@ mod test {
             select! {
                 _ = (&mut fetch).fuse() => {
                     if let Some(v) = rx.try_recv() {
-                        if matches!(v, Err(TaskError::Timeout(_))) {
+                        if matches!(v, Err(TimeoutError)) {
                             // Good ending
                             break 'result;
                         } else {
@@ -445,7 +440,7 @@ mod test {
         let v = rx.try_recv().unwrap_or_else(|| {
             panic!("expected result after await");
         });
-        assert!(matches!(v, Err(TaskError::Timeout(_))), "");
+        assert!(matches!(v, Err(TimeoutError)), "");
         assert!(v.is_err(), "timeout should have triggered!");
     }
 }

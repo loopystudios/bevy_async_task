@@ -2,7 +2,7 @@
 
 use async_std::task::sleep;
 use bevy::{app::PanicHandlerPlugin, log::LogPlugin, prelude::*};
-use bevy_async_task::{Duration, TaskError, TimedAsyncTask, TimedTaskRunner};
+use bevy_async_task::{Duration, TimedAsyncTask, TimedTaskRunner, TimeoutError};
 use std::task::Poll;
 
 fn system_does_timeout(mut task_executor: TimedTaskRunner<'_, ()>) {
@@ -13,7 +13,7 @@ fn system_does_timeout(mut task_executor: TimedTaskRunner<'_, ()>) {
     }
 
     match task_executor.poll() {
-        Poll::Ready(Err(TaskError::Timeout(_))) => {
+        Poll::Ready(Err(TimeoutError)) => {
             info!("Timeout on A!");
         }
         Poll::Pending => {

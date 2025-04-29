@@ -5,8 +5,9 @@ mod receiver;
 mod task;
 mod task_pool;
 mod task_runner;
+mod timeout;
 
-pub use error::TaskError;
+pub use error::TimeoutError;
 pub use receiver::AsyncReceiver;
 pub use task::{AsyncTask, TimedAsyncTask};
 pub use task_pool::{TaskPool, TimedTaskPool};
