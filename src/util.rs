@@ -6,7 +6,7 @@ pub async fn pending<T>() {
     std::future::pending::<T>().await;
 }
 
-/// A task which sleeps for a specified duration.
+/// Sleep for a specified duration.
 pub async fn sleep(duration: Duration) {
     Delay::new(duration).await;
 }
@@ -23,6 +23,10 @@ mod wasm {
     use gloo_timers::future::TimeoutFuture;
     use web_time::Duration;
 
+    /// Execute a future or error on timeout, whichever comes first.
+    ///
+    /// # Errors
+    /// Will return `Err` if the timeout occurs before the future is ready.
     pub async fn timeout<F, T>(dur: Duration, f: F) -> Result<T, TimeoutError>
     where
         F: Future<Output = T>,
@@ -45,6 +49,10 @@ mod native {
     use futures_timer::Delay;
     use web_time::Duration;
 
+    /// Execute a future or error on timeout, whichever comes first.
+    ///
+    /// # Errors
+    /// Will return `Err` if the timeout occurs before the future is ready.
     pub async fn timeout<F, T>(dur: Duration, f: F) -> Result<T, TimeoutError>
     where
         F: Future<Output = T>,
