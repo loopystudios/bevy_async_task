@@ -1,8 +1,7 @@
 //! Task pool example - this demonstrates running several async tasks concurrently.
 
-use async_std::task::sleep;
 use bevy::{app::PanicHandlerPlugin, log::LogPlugin, prelude::*};
-use bevy_async_task::{Duration, TaskPool};
+use bevy_async_task::{Duration, TaskPool, sleep};
 use std::task::Poll;
 
 fn system1(mut task_pool: TaskPool<'_, u64>) {

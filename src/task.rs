@@ -1,4 +1,4 @@
-use crate::{AsyncReceiver, Duration, error::TimeoutError, timeout::timeout};
+use crate::{AsyncReceiver, Duration, error::TimeoutError, sleep, util::timeout};
 #[cfg(not(target_arch = "wasm32"))]
 use async_compat::CompatExt;
 use bevy::tasks::{ConditionalSend, ConditionalSendFuture};
@@ -50,6 +50,13 @@ where
         f.debug_struct("AsyncTask")
             .field("fut", &"<future>")
             .finish()
+    }
+}
+
+impl AsyncTask<()> {
+    /// A task which sleeps for a specified duration.
+    pub async fn sleep(duration: Duration) -> Self {
+        Self::new(sleep(duration))
     }
 }
 

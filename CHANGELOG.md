@@ -10,6 +10,13 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ## Unreleased
 
+## 0.8.0
+
+### Added
+
+- Exposed `timeout`, `sleep`, and `pending` utility functions.
+- Added `AsyncTask::sleep`
+
 ## 0.7.0
 
 ### Changed

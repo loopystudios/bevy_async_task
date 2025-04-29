@@ -5,15 +5,16 @@ mod receiver;
 mod task;
 mod task_pool;
 mod task_runner;
-mod timeout;
+mod util;
 
 pub use error::TimeoutError;
 pub use receiver::AsyncReceiver;
 pub use task::{AsyncTask, TimedAsyncTask};
 pub use task_pool::{TaskPool, TimedTaskPool};
 pub use task_runner::{TaskRunner, TimedTaskRunner};
+pub use util::{pending, sleep, timeout};
 
-/// The a good default timeout. Values near `u32::MAX` will overflow.
+/// A good default timeout. Values near `u32::MAX` will overflow.
 pub(crate) const DEFAULT_TIMEOUT: Duration = Duration::from_millis(u16::MAX as u64);
 
 // Vendor re-exports

@@ -1,7 +1,20 @@
+use futures_timer::Delay;
+use web_time::Duration;
+
+/// Never resolves to a value or becomes ready.
+pub async fn pending<T>() {
+    std::future::pending::<T>().await;
+}
+
+/// A task which sleeps for a specified duration.
+pub async fn sleep(duration: Duration) {
+    Delay::new(duration).await;
+}
+
 #[cfg(not(target_arch = "wasm32"))]
-pub(crate) use native::timeout;
+pub use native::timeout;
 #[cfg(target_arch = "wasm32")]
-pub(crate) use wasm::timeout;
+pub use wasm::timeout;
 
 #[cfg(target_arch = "wasm32")]
 mod wasm {
@@ -10,7 +23,7 @@ mod wasm {
     use gloo_timers::future::TimeoutFuture;
     use web_time::Duration;
 
-    pub(crate) async fn timeout<F, T>(dur: Duration, f: F) -> Result<T, TimeoutError>
+    pub async fn timeout<F, T>(dur: Duration, f: F) -> Result<T, TimeoutError>
     where
         F: Future<Output = T>,
     {
@@ -32,7 +45,7 @@ mod native {
     use futures_timer::Delay;
     use web_time::Duration;
 
-    pub(crate) async fn timeout<F, T>(dur: Duration, f: F) -> Result<T, TimeoutError>
+    pub async fn timeout<F, T>(dur: Duration, f: F) -> Result<T, TimeoutError>
     where
         F: Future<Output = T>,
     {

@@ -1,8 +1,7 @@
 //! Simple example - this demonstrates running one async task continuously.
 
-use async_std::task::sleep;
 use bevy::{app::PanicHandlerPlugin, log::LogPlugin, prelude::*};
-use bevy_async_task::TaskRunner;
+use bevy_async_task::{TaskRunner, sleep};
 use std::{task::Poll, time::Duration};
 
 /// An async task that takes time to compute!

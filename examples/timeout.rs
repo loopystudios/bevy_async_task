@@ -1,8 +1,7 @@
 //! Timeout example - this demonstrates running one task with a timeout continuously.
 
-use async_std::task::sleep;
 use bevy::{app::PanicHandlerPlugin, log::LogPlugin, prelude::*};
-use bevy_async_task::{Duration, TimedAsyncTask, TimedTaskRunner, TimeoutError};
+use bevy_async_task::{Duration, TimedAsyncTask, TimedTaskRunner, TimeoutError, sleep};
 use std::task::Poll;
 
 fn system_does_timeout(mut task_executor: TimedTaskRunner<'_, ()>) {

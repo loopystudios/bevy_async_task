@@ -80,17 +80,14 @@ bevy = { version = "0.16.0", default-features = false, features = [
 ] }
 thiserror = "2.0.12"
 futures = "0.3.31"
+futures-timer = "3.0.3"
 web-time = "1.1.0"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 async-compat = "0.2.4"
-futures-timer = "3.0.3"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 gloo-timers = { version = "0.3.0", features = ["futures"] }
-
-[dev-dependencies]
-async-std = "1.13.1"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
 tokio = { version = "1.44.2", features = ["full"] }
