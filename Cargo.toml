@@ -75,8 +75,8 @@ clippy.wildcard_dependencies = "warn"
 [dependencies]
 tokio = { version = "1.44.2", default-features = false, features = ["sync"] }
 
-bevy_ecs = { version = "0.16.0", default-features = false }
-bevy_tasks = { version = "0.16.0", default-features = false, features = ["multi_threaded"] }
+bevy_ecs = { version = "0.16.0", default-features = false, features = ["multi_threaded", "async_executor"] }
+bevy_tasks = { version = "0.16.0", default-features = false, features = ["async_executor"] }
 bevy_utils = { version = "0.16.0", default-features = false }
 
 thiserror = "2.0.12"
