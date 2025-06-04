@@ -1,14 +1,11 @@
 use crate::{AsyncReceiver, AsyncTask, TimedAsyncTask, TimeoutError};
-use bevy::{
-    ecs::{
-        component::Tick,
-        system::{ExclusiveSystemParam, ReadOnlySystemParam, SystemMeta, SystemParam},
-        world::unsafe_world_cell::UnsafeWorldCell,
-    },
-    prelude::*,
-    tasks::{AsyncComputeTaskPool, ConditionalSend},
-    utils::synccell::SyncCell,
+use bevy_ecs::{
+    component::Tick,
+    system::{ExclusiveSystemParam, ReadOnlySystemParam, SystemMeta, SystemParam},
+    world::{World, unsafe_world_cell::UnsafeWorldCell},
 };
+use bevy_tasks::{AsyncComputeTaskPool, ConditionalSend};
+use bevy_utils::synccell::SyncCell;
 use std::{
     ops::{Deref, DerefMut},
     sync::atomic::Ordering,
