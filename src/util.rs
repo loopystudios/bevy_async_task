@@ -18,10 +18,11 @@ pub use wasm::timeout;
 
 #[cfg(target_arch = "wasm32")]
 mod wasm {
-    use crate::TimeoutError;
     use futures::FutureExt;
     use gloo_timers::future::TimeoutFuture;
     use web_time::Duration;
+
+    use crate::TimeoutError;
 
     /// Execute a future or error on timeout, whichever comes first.
     ///
@@ -44,10 +45,11 @@ mod wasm {
 
 #[cfg(not(target_arch = "wasm32"))]
 mod native {
-    use crate::TimeoutError;
     use futures::FutureExt;
     use futures_timer::Delay;
     use web_time::Duration;
+
+    use crate::TimeoutError;
 
     /// Execute a future or error on timeout, whichever comes first.
     ///

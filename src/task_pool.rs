@@ -1,4 +1,5 @@
-use crate::{AsyncReceiver, AsyncTask, TimedAsyncTask, TimeoutError};
+use std::task::Poll;
+
 use bevy_ecs::{
     component::Tick,
     system::{ExclusiveSystemParam, ReadOnlySystemParam, SystemMeta, SystemParam},
@@ -6,7 +7,8 @@ use bevy_ecs::{
 };
 use bevy_tasks::{AsyncComputeTaskPool, ConditionalSend};
 use bevy_utils::synccell::SyncCell;
-use std::task::Poll;
+
+use crate::{AsyncReceiver, AsyncTask, TimedAsyncTask, TimeoutError};
 
 /// A Bevy [`SystemParam`] to execute many similar [`AsyncTask`]s in the
 /// background simultaneously.

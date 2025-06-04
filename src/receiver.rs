@@ -1,8 +1,9 @@
-use futures::task::AtomicWaker;
 use std::sync::{
     Arc,
     atomic::{AtomicBool, Ordering},
 };
+
+use futures::task::AtomicWaker;
 use tokio::sync::oneshot::{self};
 
 /// A channel that catches an [`AsyncTask`](crate::AsyncTask) result.

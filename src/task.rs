@@ -1,8 +1,3 @@
-use crate::{AsyncReceiver, Duration, error::TimeoutError, sleep, util::timeout};
-#[cfg(not(target_arch = "wasm32"))]
-use async_compat::CompatExt;
-use bevy_tasks::{ConditionalSend, ConditionalSendFuture};
-use futures::task::AtomicWaker;
 use std::{
     fmt::Debug,
     future::{Future, pending},
@@ -13,7 +8,14 @@ use std::{
     },
     task::Poll,
 };
+
+#[cfg(not(target_arch = "wasm32"))]
+use async_compat::CompatExt;
+use bevy_tasks::{ConditionalSend, ConditionalSendFuture};
+use futures::task::AtomicWaker;
 use tokio::sync::oneshot;
+
+use crate::{AsyncReceiver, Duration, error::TimeoutError, sleep, util::timeout};
 
 /// A wrapper type around an async future with a timeout. The future may be executed
 /// asynchronously by an [`TimedTaskRunner`](crate::TimedTaskRunner) or
@@ -229,11 +231,13 @@ where
 #[cfg(not(target_arch = "wasm32"))]
 #[cfg(test)]
 mod test {
-    use super::*;
+    use std::time::Duration;
+
     use futures::{FutureExt, pin_mut};
     use futures_timer::Delay;
-    use std::time::Duration;
     use tokio::select;
+
+    use super::*;
 
     #[tokio::test]
     async fn test_oneshot() {
@@ -353,10 +357,11 @@ mod test {
 #[cfg(target_arch = "wasm32")]
 #[cfg(test)]
 mod test {
-    use super::*;
     use wasm_bindgen::JsValue;
     use wasm_bindgen_futures::JsFuture;
     use wasm_bindgen_test::wasm_bindgen_test;
+
+    use super::*;
 
     #[wasm_bindgen_test]
     async fn test_oneshot() {
