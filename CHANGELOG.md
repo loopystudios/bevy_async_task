@@ -10,6 +10,14 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ## Unreleased
 
+- Nothing yet!
+
+## 0.8.1
+
+### Fixed
+
+- `bevy_async_task` no longer uses the entire bevy dependency, just the relevant crates directly (e.g. `bevy_ecs`).
+
 ## 0.8.0
 
 ### Added
