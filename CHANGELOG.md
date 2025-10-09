@@ -1,113 +1,134 @@
 # Changelog
 
-<!-- Instructions
+All notable changes to this project will be documented in this file.
 
-This changelog follows the patterns described here: <https://keepachangelog.com/en/1.0.0/>.
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-Subheadings to categorize changes are `added, changed, deprecated, removed, fixed, security`.
+## [Unreleased]
 
--->
+- Nothing yet!
 
-## Unreleased
+## [0.9.0] - 2025-10-09
 
 ### Changed
 
-- Migrated to bevy 0.17
+- Migrated to **Bevy 0.17**.
 
-## 0.8.1
+## [0.8.1] - 2025-07-14
 
 ### Fixed
 
-- `bevy_async_task` no longer uses the entire bevy dependency, just the relevant crates directly (e.g. `bevy_ecs`).
+- `bevy_async_task` no longer depends on the entire `bevy` crate — only the relevant subcrates (e.g., `bevy_ecs`).
 
-## 0.8.0
+## [0.8.0] - 2025-06-10
 
 ### Added
 
-- Exposed `timeout`, `sleep`, and `pending` utility functions.
-- Added `AsyncTask::sleep`
+- Exposed utility functions: `timeout`, `sleep`, and `pending`.
+- Added `AsyncTask::sleep`.
 
-## 0.7.0
+## [0.7.0] - 2025-05-03
 
 ### Changed
 
-- The `TaskError` enum has been replaced with a `TimeoutError` struct.
+- Replaced the `TaskError` enum with a `TimeoutError` struct.
 
 ### Fixed
 
-- A panic was fixed on WASM when the timeout exceeded numerical bounds.
+- Fixed a panic on WebAssembly (WASM) when timeouts exceeded numerical bounds.
 
-## 0.6.0
-
-### Changed
-
-- Updated to Bevy 0.16.
-
-## 0.5.0
+## [0.6.0] - 2025-03-17
 
 ### Changed
 
-- Updated to rust 2024 edition.
+- Updated to **Bevy 0.16**.
+
+## [0.5.0] - 2024-12-22
+
+### Changed
+
+- Updated to **Rust 2024 Edition**.
 - Split `AsyncTaskRunner` into `TimedTaskRunner` and `TaskRunner`. The timed variant polls timeouts.
 - Split `AsyncTaskPool` into `TimedTaskPool` and `TaskPool`. The timed variant polls timeouts.
-- `AsyncTask::build` has been renamed to `AsyncTask::split`.
+- Renamed `AsyncTask::build` to `AsyncTask::split`.
 
-## 0.4.1
+## [0.4.1] - 2024-10-11
 
 ### Fixed
 
-- There is no longer repetitive console warnings about polling tasks.
+- Removed repetitive console warnings about polling tasks.
 
-## 0.4.0
-
-### Added
-
-- `AsyncTask.with_timeout()` has been added back.
-
-### Changed
-
-- `poll()` and `iter_poll()` now return a `Result<T, TimeoutError>`.
-- `std::time::Duration` has been replaced with `web_time::Duration`.
-- `into_parts()` has been replaced with `build()`.
-
-## 0.3.0
+## [0.4.0] - 2024-09-30
 
 ### Added
 
-- Many types now implement `Debug`.
+- Reintroduced `AsyncTask::with_timeout()`.
 
 ### Changed
 
-- Updated to bevy 0.15.
-- `AsyncTaskStatus` was replaced with `std::task::Poll`. If you wish to check if a task runner or pool is idle, you can still do so with `<AsyncTaskRunner>.is_idle()`/`<AsyncTaskPool>.is_idle()`.
-- Replaced `TimeoutError` with a non-exhaustive `TimeoutError` for future proofing.
+- `poll()` and `iter_poll()` now return `Result<T, TimeoutError>`.
+- Replaced `std::time::Duration` with `web_time::Duration`.
+- Replaced `into_parts()` with `build()`.
+
+## [0.3.0] - 2024-06-09
+
+### Added
+
+- Implemented `Debug` for many types.
+
+### Changed
+
+- Updated to **Bevy 0.15**.
+- Replaced `AsyncTaskStatus` with `std::task::Poll`.
+  - To check if a task runner or pool is idle, use `<AsyncTaskRunner>::is_idle()` or `<AsyncTaskPool>::is_idle()`.
+- Made `TimeoutError` non-exhaustive for forward compatibility.
 
 ### Removed
 
-- `blocking_recv()` functions were removed. You should now use `bevy::tasks::block_on(fut)`.
-- `AsyncTask.with_timeout()` until further rework is done to return this functionality. Please use `AsyncTask::new_with_duration(Dur, F)` instead.
+- Removed `blocking_recv()` functions. Use `bevy::tasks::block_on(fut)` instead.
+- Temporarily removed `AsyncTask::with_timeout()` pending rework. Use `AsyncTask::new_with_duration(duration, f)` as an alternative.
 
 ### Fixed
 
-- Timeouts now work correctly on wasm32.
-- `AsyncReceiver` now uses an `AtomicWaker` to ensure the sender is never dropped before receiving.
+- Timeouts now function correctly on `wasm32`.
+- `AsyncReceiver` now uses an `AtomicWaker` to ensure the sender isn’t dropped prematurely.
 
-## 0.2.0
+## [0.2.0] - 2024-03-14
 
 ### Changed
 
-- Updated to bevy 0.14
+- Updated to **Bevy 0.14**.
 
 ### Fixed
 
-- Blocking example for web targets.
+- Fixed blocking example for web targets.
 
-## 0.1.1
+## [0.1.1] - 2024-02-09
 
 ### Fixed
 
-- READMDE re-uploaded to correct [#10](https://github.com/loopystudios/bevy_async_task/issues/10).
+- Re-uploaded README to correct [#10](https://github.com/loopystudios/bevy_async_task/issues/10).
 
-## 0.1.0
+## [0.1.0] - 2024-02-01
 
-- Initial release. Crate was renamed to `bevy_async_task` from `bevy-async-task` and republished.
+### Added
+
+- Initial release.
+- Crate renamed from `bevy-async-task` to `bevy_async_task` and republished.
+
+---
+
+[unreleased]: https://github.com/loopystudios/bevy_async_task/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/loopystudios/bevy_async_task/compare/v0.8.1...v0.9.0
+[0.8.1]: https://github.com/loopystudios/bevy_async_task/compare/v0.8.0...v0.8.1
+[0.8.0]: https://github.com/loopystudios/bevy_async_task/compare/v0.7.0...v0.8.0
+[0.7.0]: https://github.com/loopystudios/bevy_async_task/compare/v0.6.0...v0.7.0
+[0.6.0]: https://github.com/loopystudios/bevy_async_task/compare/v0.5.0...v0.6.0
+[0.5.0]: https://github.com/loopystudios/bevy_async_task/compare/v0.4.1...v0.5.0
+[0.4.1]: https://github.com/loopystudios/bevy_async_task/compare/v0.4.0...v0.4.1
+[0.4.0]: https://github.com/loopystudios/bevy_async_task/compare/v0.3.0...v0.4.0
+[0.3.0]: https://github.com/loopystudios/bevy_async_task/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/loopystudios/bevy_async_task/compare/v0.1.1...v0.2.0
+[0.1.1]: https://github.com/loopystudios/bevy_async_task/compare/v0.1.0...v0.1.1
+[0.1.0]: https://github.com/loopystudios/bevy_async_task/releases/tag/v0.1.0
