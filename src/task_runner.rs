@@ -9,8 +9,8 @@ use bevy_ecs::{
     system::{ExclusiveSystemParam, ReadOnlySystemParam, SystemMeta, SystemParam},
     world::{World, unsafe_world_cell::UnsafeWorldCell},
 };
+use bevy_platform::cell::SyncCell;
 use bevy_tasks::{AsyncComputeTaskPool, ConditionalSend};
-use bevy_utils::synccell::SyncCell;
 
 use crate::{AsyncReceiver, AsyncTask, TimedAsyncTask, TimeoutError};
 
@@ -105,7 +105,7 @@ unsafe impl<T: Send + 'static> SystemParam for TaskRunner<'_, T> {
     type State = SyncCell<Option<AsyncReceiver<T>>>;
     type Item<'w, 's> = TaskRunner<'s, T>;
 
-    fn init_state(_world: &mut World, _system_meta: &mut SystemMeta) -> Self::State {
+    fn init_state(_world: &mut World) -> Self::State {
         SyncCell::new(None)
     }
 
@@ -117,6 +117,14 @@ unsafe impl<T: Send + 'static> SystemParam for TaskRunner<'_, T> {
         _change_tick: Tick,
     ) -> Self::Item<'w, 's> {
         TaskRunner(state.get())
+    }
+
+    fn init_access(
+        _state: &Self::State,
+        _system_meta: &mut SystemMeta,
+        _component_access_set: &mut bevy_ecs::query::FilteredAccessSet,
+        _world: &mut World,
+    ) {
     }
 }
 
@@ -213,7 +221,7 @@ unsafe impl<T: Send + 'static> SystemParam for TimedTaskRunner<'_, T> {
     type State = SyncCell<Option<AsyncReceiver<Result<T, TimeoutError>>>>;
     type Item<'w, 's> = TimedTaskRunner<'s, T>;
 
-    fn init_state(_world: &mut World, _system_meta: &mut SystemMeta) -> Self::State {
+    fn init_state(_world: &mut World) -> Self::State {
         SyncCell::new(None)
     }
 
@@ -225,5 +233,13 @@ unsafe impl<T: Send + 'static> SystemParam for TimedTaskRunner<'_, T> {
         _change_tick: Tick,
     ) -> Self::Item<'w, 's> {
         TimedTaskRunner(state.get())
+    }
+
+    fn init_access(
+        _state: &Self::State,
+        _system_meta: &mut SystemMeta,
+        _component_access_set: &mut bevy_ecs::query::FilteredAccessSet,
+        _world: &mut World,
+    ) {
     }
 }

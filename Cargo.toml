@@ -14,56 +14,44 @@ version = "0.8.1"
 edition = "2024"
 
 [lints]
-# LINEBENDER LINT SET - Cargo.toml - v2
+# LINEBENDER LINT SET - Cargo.toml - v6.1
 # See https://linebender.org/wiki/canonical-lints/
 rust.keyword_idents_2024 = "forbid"
 rust.non_ascii_idents = "forbid"
 rust.non_local_definitions = "forbid"
 rust.unsafe_op_in_unsafe_fn = "forbid"
+
 rust.elided_lifetimes_in_paths = "warn"
-rust.let_underscore_drop = "warn"
 rust.missing_debug_implementations = "warn"
 rust.missing_docs = "warn"
-rust.single_use_lifetimes = "warn"
 rust.trivial_numeric_casts = "warn"
-rust.unexpected_cfgs = "warn"
-rust.unit_bindings = "warn"
 rust.unnameable_types = "warn"
 rust.unreachable_pub = "warn"
 rust.unused_import_braces = "warn"
 rust.unused_lifetimes = "warn"
 rust.unused_macro_rules = "warn"
-rust.unused_qualifications = "warn"
-rust.variant_size_differences = "warn"
-clippy.allow_attributes = "warn"
+
+clippy.too_many_arguments = "allow"
+
 clippy.allow_attributes_without_reason = "warn"
 clippy.cast_possible_truncation = "warn"
 clippy.collection_is_never_read = "warn"
 clippy.dbg_macro = "warn"
 clippy.debug_assert_with_mut_call = "warn"
 clippy.doc_markdown = "warn"
-clippy.exhaustive_enums = "warn"
-clippy.fn_to_numeric_cast_any = "forbid"
+clippy.fn_to_numeric_cast_any = "warn"
 clippy.infinite_loop = "warn"
-clippy.large_include_file = "warn"
 clippy.large_stack_arrays = "warn"
-clippy.match_same_arms = "warn"
 clippy.mismatching_type_param_order = "warn"
 clippy.missing_assert_message = "warn"
-clippy.missing_errors_doc = "warn"
 clippy.missing_fields_in_debug = "warn"
-clippy.missing_panics_doc = "warn"
-clippy.partial_pub_fields = "warn"
-clippy.return_self_not_must_use = "warn"
 clippy.same_functions_in_if_condition = "warn"
 clippy.semicolon_if_nothing_returned = "warn"
-clippy.shadow_unrelated = "warn"
 clippy.should_panic_without_expect = "warn"
 clippy.todo = "warn"
-clippy.trivially_copy_pass_by_ref = "warn"
 clippy.unseparated_literal_suffix = "warn"
 clippy.use_self = "warn"
-clippy.wildcard_imports = "warn"
+
 clippy.cargo_common_metadata = "warn"
 clippy.negative_feature_names = "warn"
 clippy.redundant_feature_names = "warn"
@@ -73,34 +61,40 @@ clippy.wildcard_dependencies = "warn"
 [lib]
 
 [dependencies]
-tokio = { version = "1.44.2", default-features = false, features = ["sync"] }
+tokio = { version = "1.47.1", default-features = false, features = ["sync"] }
 
-bevy_ecs = { version = "0.16.0", default-features = false, features = ["multi_threaded", "async_executor"] }
-bevy_tasks = { version = "0.16.0", default-features = false, features = ["async_executor"] }
-bevy_utils = { version = "0.16.0", default-features = false }
+bevy_ecs = { version = "0.17.2", default-features = false, features = [
+  "multi_threaded",
+  "async_executor",
+] }
+bevy_tasks = { version = "0.17.2", default-features = false, features = [
+  "async_executor",
+] }
+bevy_platform = { version = "0.17.2", default-features = false }
 
-thiserror = "2.0.12"
+thiserror = "2.0.17"
 futures = "0.3.31"
-futures-timer = "3.0.3"
 web-time = "1.1.0"
 
 [dev-dependencies]
-bevy = { version = "0.16.0", default-features = false, features = [
+bevy = { version = "0.17.2", default-features = false, features = [
   "multi_threaded",
   "bevy_log",
 ] }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-async-compat = "0.2.4"
+futures-timer = "3.0.3"
+async-compat = "0.2.5"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 gloo-timers = { version = "0.3.0", features = ["futures"] }
+getrandom = { version = "0.3", features = ["wasm_js"] }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
 tokio = { version = "1.44.2", features = ["full"] }
 
 [target.'cfg(target_arch = "wasm32")'.dev-dependencies]
-wasm-bindgen-futures = "0.4.50"
-wasm-bindgen-test = "0.3.50"
-js-sys = "0.3.77"
-wasm-bindgen = "0.2.100"
+wasm-bindgen-futures = "0.4.54"
+wasm-bindgen-test = "0.3.54"
+js-sys = "0.3.81"
+wasm-bindgen = "0.2.104"

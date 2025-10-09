@@ -1,20 +1,12 @@
-use futures_timer::Delay;
-use web_time::Duration;
-
 /// Never resolves to a value or becomes ready.
 pub async fn pending<T>() {
     std::future::pending::<T>().await;
 }
 
-/// Sleep for a specified duration.
-pub async fn sleep(duration: Duration) {
-    Delay::new(duration).await;
-}
-
 #[cfg(not(target_arch = "wasm32"))]
-pub use native::timeout;
+pub use native::*;
 #[cfg(target_arch = "wasm32")]
-pub use wasm::timeout;
+pub use wasm::*;
 
 #[cfg(target_arch = "wasm32")]
 mod wasm {
@@ -23,6 +15,12 @@ mod wasm {
     use web_time::Duration;
 
     use crate::TimeoutError;
+
+    /// Sleep for a specified duration. This is non-blocking.
+    pub async fn sleep(duration: Duration) {
+        #[expect(clippy::cast_possible_truncation, reason = "Max timeout is u32::MAX")]
+        TimeoutFuture::new(duration.as_millis() as u32).await;
+    }
 
     /// Execute a future or error on timeout, whichever comes first.
     ///
@@ -50,6 +48,11 @@ mod native {
     use web_time::Duration;
 
     use crate::TimeoutError;
+
+    /// Sleep for a specified duration. This is non-blocking.
+    pub async fn sleep(duration: Duration) {
+        Delay::new(duration).await;
+    }
 
     /// Execute a future or error on timeout, whichever comes first.
     ///

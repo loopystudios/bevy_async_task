@@ -20,13 +20,14 @@ fn system1_start(mut my_task: ResMut<'_, MyTask>) {
     info!("Started!");
 }
 
-fn system2_poll(mut my_task: ResMut<'_, MyTask>) {
+fn system2_poll(mut my_task: ResMut<'_, MyTask>, mut exit: MessageWriter<'_, AppExit>) {
     let Some(receiver) = my_task.0.as_mut() else {
         return;
     };
     match receiver.try_recv() {
         Some(v) => {
             info!("Received {v}");
+            exit.write(AppExit::Success);
         }
         None => {
             // Waiting...
