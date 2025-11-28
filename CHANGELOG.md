@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- This release supports **Bevy 0.17**.
+
+## [0.10.0] - 2025-11-28
+
+- This release supports **Bevy 0.17**.
+
 ### Added
 
 - Added `bevy_async_task::MAX_TIMEOUT`
@@ -23,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A `time not implemented on this platform` panic due to `wasm-bindgen` feature not being included for the `futures-timer` crate. You can remedy this yourself for older versions of `bevy_async_task` by including `futures-timer = { version = "3.0.3", features = ["wasm-bindgen"] }` in your Cargo.toml file.
 
 ## [0.9.0] - 2025-10-09
+
+- This release supports **Bevy 0.17**.
 
 ### Changed
 
