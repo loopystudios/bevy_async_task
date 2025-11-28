@@ -17,15 +17,23 @@ mod wasm {
     use crate::TimeoutError;
 
     /// Sleep for a specified duration. This is non-blocking.
-    pub async fn sleep(duration: Duration) {
-        #[expect(clippy::cast_possible_truncation, reason = "Max timeout is u32::MAX")]
-        TimeoutFuture::new(duration.as_millis() as u32).await;
+    ///
+    /// # Panics
+    /// This function will panic if the specified Duration is greater than `i32::MAX` in millis.
+    pub async fn sleep(dur: Duration) {
+        let millis = i32::try_from(dur.as_millis()).unwrap_or_else(|_e| {
+            panic!("failed to cast the duration into a i32 with Duration::as_millis.")
+        });
+        TimeoutFuture::new(millis as u32).await;
     }
 
     /// Execute a future or error on timeout, whichever comes first.
     ///
     /// # Errors
     /// Will return `Err` if the timeout occurs before the future is ready.
+    ///
+    /// # Panics
+    /// This function will panic if the specified Duration is greater than `i32::MAX` in millis.
     pub async fn timeout<F, T>(dur: Duration, f: F) -> Result<T, TimeoutError>
     where
         F: Future<Output = T>,
@@ -33,8 +41,10 @@ mod wasm {
         futures::select! {
             res = f.fuse() => Ok(res),
             _ = {
-                #[expect(clippy::cast_possible_truncation, reason = "Max timeout is u32::MAX")]
-                TimeoutFuture::new(dur.as_millis() as u32).fuse()
+                let millis = i32::try_from(dur.as_millis()).unwrap_or_else(|_e| {
+                    panic!("failed to cast the duration into a i32 with Duration::as_millis.")
+                });
+                TimeoutFuture::new(millis as u32).fuse()
             } => Err(TimeoutError),
 
         }

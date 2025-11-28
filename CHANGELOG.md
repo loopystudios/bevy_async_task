@@ -7,7 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Nothing yet!
+### Added
+
+- Added `bevy_async_task::MAX_TIMEOUT`
+- Added `bevy_async_task::DEFAULT_TIMEOUT`
+
+### Changed
+
+- Removed `bevy_async_task::Duration`. Use `core::time::Duration` instead.
+- The default timeout for timed tasks, was changed from `u16::MAX` millis (~65 seconds) to 60 seconds.
+- The maximum timeout allowed is now `i32::MAX`. This is now enforced with a panic.
+
+### Fixed
+
+- A `time not implemented on this platform` panic due to `wasm-bindgen` feature not being included for the `futures-timer` crate. You can remedy this yourself for older versions of `bevy_async_task` by including `futures-timer = { version = "3.0.3", features = ["wasm-bindgen"] }` in your Cargo.toml file.
 
 ## [0.9.0] - 2025-10-09
 

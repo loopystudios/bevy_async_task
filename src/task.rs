@@ -1,21 +1,24 @@
-use std::{
-    fmt::Debug,
-    future::{Future, pending},
-    pin::Pin,
-    sync::{
-        Arc,
-        atomic::{AtomicBool, Ordering},
-    },
-    task::Poll,
-};
+use core::time::Duration;
+use std::fmt::Debug;
+use std::future::Future;
+use std::future::pending;
+use std::pin::Pin;
+use std::sync::Arc;
+use std::sync::atomic::AtomicBool;
+use std::sync::atomic::Ordering;
+use std::task::Poll;
 
 #[cfg(not(target_arch = "wasm32"))]
 use async_compat::CompatExt;
-use bevy_tasks::{ConditionalSend, ConditionalSendFuture};
+use bevy_tasks::ConditionalSend;
+use bevy_tasks::ConditionalSendFuture;
 use futures::task::AtomicWaker;
 use tokio::sync::oneshot;
 
-use crate::{AsyncReceiver, Duration, error::TimeoutError, sleep, util::timeout};
+use crate::AsyncReceiver;
+use crate::error::TimeoutError;
+use crate::sleep;
+use crate::util::timeout;
 
 /// A wrapper type around an async future with a timeout. The future may be executed
 /// asynchronously by an [`TimedTaskRunner`](crate::TimedTaskRunner) or
@@ -144,20 +147,28 @@ where
     T: ConditionalSend + 'static,
 {
     /// Create an async task from a future with a timeout.
+    ///
+    /// # Panics
+    /// This function will panic if the specified Duration is greater than `i32::MAX` in millis.
     pub fn new<F>(dur: Duration, fut: F) -> Self
     where
         F: ConditionalSendFuture<Output = T> + 'static,
         F::Output: ConditionalSend + 'static,
     {
+        let millis = i32::try_from(dur.as_millis()).unwrap_or_else(|_e| {
+            panic!("failed to cast the duration into a i32 with Duration::as_millis.")
+        });
         Self {
             fut: Box::pin(fut),
-            timeout: dur,
+            timeout: core::time::Duration::from_millis(millis as u64),
         }
     }
 
-    /// Never resolves to a value or becomes ready.
+    /// A future that never resolves to a value or becomes ready.
+    ///
+    /// This will, however, timeout after `i32::MAX` millis (24.8 days).
     pub fn pending() -> Self {
-        Self::new(crate::DEFAULT_TIMEOUT, pending())
+        Self::new(crate::MAX_TIMEOUT, pending())
     }
 
     /// Split the task into a runnable future and receiver.
@@ -205,9 +216,15 @@ where
     }
 
     /// Replace the timeout for this task.
+    ///
+    /// # Panics
+    /// This function will panic if the specified Duration is greater than `i32::MAX` in millis.
     #[must_use]
     pub fn with_timeout(mut self, dur: Duration) -> Self {
-        self.timeout = dur;
+        let millis = i32::try_from(dur.as_millis()).unwrap_or_else(|_e| {
+            panic!("failed to cast the duration into a i32 with Duration::as_millis.")
+        });
+        self.timeout = core::time::Duration::from_millis(millis as u64);
         self
     }
 
@@ -231,9 +248,10 @@ where
 #[cfg(not(target_arch = "wasm32"))]
 #[cfg(test)]
 mod test {
-    use std::time::Duration;
+    use core::time::Duration;
 
-    use futures::{FutureExt, pin_mut};
+    use futures::FutureExt;
+    use futures::pin_mut;
     use futures_timer::Delay;
     use tokio::select;
 

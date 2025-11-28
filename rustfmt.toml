@@ -1,8 +1,7 @@
 max_width = 100
 use_field_init_shorthand = true
 newline_style = "Unix"
-# TODO: Enable - Currently nightly only :(
-# group_imports = "StdExternalCrate"
-# wrap_comments = true
-# comment_width = 100
-# imports_granularity = "Crate"
+imports_granularity = "Item"
+group_imports = "StdExternalCrate"
+wrap_comments = true
+comment_width = 100

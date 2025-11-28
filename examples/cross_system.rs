@@ -1,8 +1,15 @@
 //! Cross system example - This example shows how to start a task from one system and poll it from
 //! another through a resource.
 
-use bevy::{app::PanicHandlerPlugin, log::LogPlugin, prelude::*, tasks::AsyncComputeTaskPool};
-use bevy_async_task::{AsyncReceiver, AsyncTask, Duration, sleep};
+use core::time::Duration;
+
+use bevy::app::PanicHandlerPlugin;
+use bevy::log::LogPlugin;
+use bevy::prelude::*;
+use bevy::tasks::AsyncComputeTaskPool;
+use bevy_async_task::AsyncReceiver;
+use bevy_async_task::AsyncTask;
+use bevy_async_task::sleep;
 
 #[derive(Resource, DerefMut, Deref, Default)]
 struct MyTask(Option<AsyncReceiver<u32>>);
