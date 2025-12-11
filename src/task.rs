@@ -123,11 +123,18 @@ where
     }
 
     /// Add a timeout for this task.
+    ///
+    /// # Panics
+    /// This function will panic if the specified Duration is greater than `i32::MAX` in millis.
     #[must_use]
     pub fn with_timeout(self, dur: Duration) -> TimedAsyncTask<T> {
+        let millis = i32::try_from(dur.as_millis()).unwrap_or_else(|_e| {
+            panic!("failed to cast the duration into a i32 with Duration::as_millis.")
+        });
+        let timeout = core::time::Duration::from_millis(millis as u64);
         TimedAsyncTask {
             fut: self.fut,
-            timeout: dur,
+            timeout,
         }
     }
 }
