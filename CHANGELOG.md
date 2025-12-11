@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - This release supports **Bevy 0.17**.
 
+### Added
+
+- Added `.forget()` to `AsyncTask`.
+
+### Removed
+
+- Removed `Deref` from `TaskRunner` and `TimedTaskRunner`.
+- Removed `DerefMut` from `TaskRunner` and `TimedTaskRunner`.
+
 ## [0.10.0] - 2025-11-28
 
 - This release supports **Bevy 0.17**.

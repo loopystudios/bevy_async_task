@@ -1,5 +1,3 @@
-use std::ops::Deref;
-use std::ops::DerefMut;
 use std::sync::atomic::Ordering;
 use std::task::Poll;
 
@@ -23,26 +21,13 @@ use crate::TimeoutError;
 #[derive(Debug)]
 pub struct TaskRunner<'s, T>(pub(crate) &'s mut Option<AsyncReceiver<T>>);
 
-impl<T> Deref for TaskRunner<'_, T> {
-    type Target = Option<AsyncReceiver<T>>;
-
-    fn deref(&self) -> &Self::Target {
-        self.0
-    }
-}
-impl<T> DerefMut for TaskRunner<'_, T> {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        self.0
-    }
-}
-
 impl<T> TaskRunner<'_, T>
 where
     T: ConditionalSend + 'static,
 {
     /// Returns whether the task runner is idle.
     pub fn is_idle(&self) -> bool {
-        self.is_none()
+        self.0.is_none()
     }
 
     /// Returns whether the task runner is pending (running, but not finished).
@@ -73,6 +58,13 @@ where
         let handle = task_pool.spawn(fut);
         handle.detach();
         self.0.replace(rx);
+    }
+
+    /// Forget the task being run. This does not stop the task.
+    ///
+    /// Note: Bevy does not support cancelling a task on web currently.
+    pub fn forget(&mut self) {
+        self.0.take();
     }
 
     /// Poll the task runner for the current task status. Possible returns are `Pending` or
@@ -139,26 +131,13 @@ pub struct TimedTaskRunner<'s, T>(
     pub(crate) &'s mut Option<AsyncReceiver<Result<T, TimeoutError>>>,
 );
 
-impl<T> Deref for TimedTaskRunner<'_, T> {
-    type Target = Option<AsyncReceiver<Result<T, TimeoutError>>>;
-
-    fn deref(&self) -> &Self::Target {
-        self.0
-    }
-}
-impl<T> DerefMut for TimedTaskRunner<'_, T> {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        self.0
-    }
-}
-
 impl<T> TimedTaskRunner<'_, T>
 where
     T: ConditionalSend + 'static,
 {
     /// Returns whether the task runner is idle.
     pub fn is_idle(&self) -> bool {
-        self.is_none()
+        self.0.is_none()
     }
 
     /// Returns whether the task runner is pending (running, but not finished).
