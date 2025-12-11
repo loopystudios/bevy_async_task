@@ -1,14 +1,20 @@
 use std::task::Poll;
 
-use bevy_ecs::{
-    component::Tick,
-    system::{ExclusiveSystemParam, ReadOnlySystemParam, SystemMeta, SystemParam},
-    world::{World, unsafe_world_cell::UnsafeWorldCell},
-};
+use bevy_ecs::component::Tick;
+use bevy_ecs::system::ExclusiveSystemParam;
+use bevy_ecs::system::ReadOnlySystemParam;
+use bevy_ecs::system::SystemMeta;
+use bevy_ecs::system::SystemParam;
+use bevy_ecs::world::World;
+use bevy_ecs::world::unsafe_world_cell::UnsafeWorldCell;
 use bevy_platform::cell::SyncCell;
-use bevy_tasks::{AsyncComputeTaskPool, ConditionalSend};
+use bevy_tasks::AsyncComputeTaskPool;
+use bevy_tasks::ConditionalSend;
 
-use crate::{AsyncReceiver, AsyncTask, TimedAsyncTask, TimeoutError};
+use crate::AsyncReceiver;
+use crate::AsyncTask;
+use crate::TimedAsyncTask;
+use crate::TimeoutError;
 
 /// A Bevy [`SystemParam`] to execute many similar [`AsyncTask`]s in the
 /// background simultaneously.
@@ -44,6 +50,13 @@ impl<T: ConditionalSend + 'static> TaskPool<'_, T> {
             }
         });
         statuses.into_iter()
+    }
+
+    /// Forget all tasks being run. This does not stop any task.
+    ///
+    /// Note: Bevy does not support cancelling a task on web currently.
+    pub fn forget_all(&mut self) {
+        self.0.clear();
     }
 }
 
@@ -124,6 +137,13 @@ impl<T: ConditionalSend + 'static> TimedTaskPool<'_, T> {
             }
         });
         statuses.into_iter()
+    }
+
+    /// Forget all tasks being run. This does not stop any task.
+    ///
+    /// Note: Bevy does not support cancelling a task on web currently.
+    pub fn forget_all(&mut self) {
+        self.0.clear();
     }
 }
 

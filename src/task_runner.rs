@@ -170,6 +170,13 @@ where
         self.0.replace(rx);
     }
 
+    /// Forget the task being run. This does not stop the task.
+    ///
+    /// Note: Bevy does not support cancelling a task on web currently.
+    pub fn forget(&mut self) {
+        self.0.take();
+    }
+
     /// Poll the task runner for the current task status. Possible returns are `Pending` or
     /// `Ready(T)`.
     pub fn poll(&mut self) -> Poll<Result<T, TimeoutError>> {

@@ -11,7 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added `.forget()` to `AsyncTask`.
+- Added `.forget()` to `TaskRunner` and `TimedTaskRunner`.
+- Added `.forget_all()` to `TaskPool` and `TimedTaskPool`.
 
 ### Removed
 
