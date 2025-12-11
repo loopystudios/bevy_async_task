@@ -19,6 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed `Deref` from `TaskRunner` and `TimedTaskRunner`.
 - Removed `DerefMut` from `TaskRunner` and `TimedTaskRunner`.
 
+### Fixed
+
+- It was possible to use a duration over `i32::MAX` in millis for `AsyncTask::with_duration(&mut self)`.
+
 ## [0.10.0] - 2025-11-28
 
 - This release supports **Bevy 0.17**.
