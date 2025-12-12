@@ -86,7 +86,7 @@ where
     /// Split the task into a runnable future and receiver.
     /// This is a low-level operation and only useful for specific needs.
     #[must_use]
-    pub fn split(self) -> (Pin<Box<impl Future<Output = ()>>>, AsyncReceiver<T>) {
+    pub fn split(self) -> (impl ConditionalSendFuture<Output = ()>, AsyncReceiver<T>) {
         let (tx, rx) = oneshot::channel();
         let waker = Arc::new(AtomicWaker::new());
         let received = Arc::new(AtomicBool::new(false));
@@ -184,7 +184,7 @@ where
     pub fn split(
         self,
     ) -> (
-        Pin<Box<impl Future<Output = ()>>>,
+        impl ConditionalSendFuture<Output = ()>,
         AsyncReceiver<Result<T, TimeoutError>>,
     ) {
         let (tx, rx) = oneshot::channel();

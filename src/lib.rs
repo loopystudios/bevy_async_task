@@ -11,6 +11,7 @@ mod util;
 
 pub use error::TimeoutError;
 pub use receiver::AsyncReceiver;
+pub use receiver::AsyncStreamReceiver;
 pub use stream::AsyncStream;
 pub use task::AsyncTask;
 pub use task::TimedAsyncTask;
@@ -32,3 +33,17 @@ pub const MAX_TIMEOUT: core::time::Duration = {
     static I32_MAX_U64: u64 = 2_147_483_647;
     core::time::Duration::from_millis(I32_MAX_U64)
 };
+
+#[doc(hidden)]
+pub mod polyfill {
+    use bevy_tasks::ConditionalSend;
+    use bevy_tasks::futures_lite::Stream;
+
+    /// The missing conditional send stream trait.
+    /// see: <https://github.com/bevyengine/bevy/issues/22093>
+    pub trait ConditionalSendStream: Stream + ConditionalSend {}
+
+    impl<T: Stream + ConditionalSend> ConditionalSendStream for T {}
+}
+
+pub use polyfill::ConditionalSendStream;
