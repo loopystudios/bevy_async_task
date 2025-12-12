@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added `AsyncStream` and `TaskStream`, functional equivalents of `AsyncTask` and `TaskRunner` for streams (aka async iterators). See the streaming example.
 - Added `bevy_async_task::MAX_TIMEOUT`
 - Added `bevy_async_task::DEFAULT_TIMEOUT`
 
