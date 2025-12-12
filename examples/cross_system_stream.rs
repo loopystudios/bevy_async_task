@@ -1,6 +1,5 @@
 //! Cross system example - This example shows how to start a stream from one system and poll it from
 //! another through a resource.
-use std::task::Poll;
 use std::time::Duration;
 
 use bevy::app::PanicHandlerPlugin;
