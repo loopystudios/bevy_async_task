@@ -1,6 +1,5 @@
 use core::time::Duration;
 use std::fmt::Debug;
-use std::future::Future;
 use std::future::pending;
 use std::pin::Pin;
 use std::sync::Arc;
