@@ -9,8 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - This release supports **Bevy 0.17**.
 
+## [0.11] - 2025-12-12
+
+- This release supports **Bevy 0.17**.
+
 ### Added
 
+- Added `AsyncStream` and `TaskStream`, functional equivalents of `AsyncTask` and `TaskRunner` for streams (aka async iterators). See the streaming example.
 - Added `.forget()` to `TaskRunner` and `TimedTaskRunner`.
 - Added `.forget_all()` to `TaskPool` and `TimedTaskPool`.
 

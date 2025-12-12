@@ -10,7 +10,7 @@ repository = "https://github.com/loopystudios/bevy_async_task"
 authors = ["Spencer C. Imbleau"]
 keywords = ["gamedev", "async"]
 categories = ["game-development", "asynchronous"]
-version = "0.10.0"
+version = "0.11.0"
 edition = "2024"
 
 [lints]
@@ -61,23 +61,23 @@ clippy.wildcard_dependencies = "warn"
 [lib]
 
 [dependencies]
-tokio = { version = "1.47.1", default-features = false, features = ["sync"] }
+tokio = { version = "1.48.0", default-features = false, features = ["sync"] }
 
-bevy_ecs = { version = "0.17.2", default-features = false, features = [
+bevy_ecs = { version = "0.17.3", default-features = false, features = [
   "multi_threaded",
   "async_executor",
 ] }
-bevy_tasks = { version = "0.17.2", default-features = false, features = [
+bevy_tasks = { version = "0.17.3", default-features = false, features = [
   "async_executor",
 ] }
-bevy_platform = { version = "0.17.2", default-features = false }
+bevy_platform = { version = "0.17.3", default-features = false }
 
 thiserror = "2.0.17"
 futures = "0.3.31"
 web-time = "1.1.0"
 
 [dev-dependencies]
-bevy = { version = "0.17.2", default-features = false, features = [
+bevy = { version = "0.17.3", default-features = false, features = [
   "multi_threaded",
   "bevy_log",
 ] }
@@ -88,13 +88,13 @@ futures-timer = "3.0.3"
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 futures-timer = { version = "3.0.3", features = ["wasm-bindgen"] }
 gloo-timers = { version = "0.3.0", features = ["futures"] }
-getrandom = { version = "0.3", features = ["wasm_js"] }
+getrandom = { version = "0.3.4", features = ["wasm_js"] }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
-tokio = { version = "1.44.2", features = ["full"] }
+tokio = { version = "1.48.0", features = ["full"] }
 
 [target.'cfg(target_arch = "wasm32")'.dev-dependencies]
-wasm-bindgen-futures = "0.4.54"
-wasm-bindgen-test = "0.3.54"
-js-sys = "0.3.81"
-wasm-bindgen = "0.2.104"
+wasm-bindgen-futures = "0.4.56"
+wasm-bindgen-test = "0.3.56"
+js-sys = "0.3.83"
+wasm-bindgen = "0.2.106"

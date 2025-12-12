@@ -20,7 +20,7 @@ Bevy Async Task provides Bevy system parameters to run asynchronous tasks in the
 
 |bevy|bevy_async_task|
 |---|---|
-|0.17|0.9-0.10,main|
+|0.17|0.9-0.11,main|
 |0.16|0.6-0.8|
 |0.15|0.3-0.5|
 |0.14|0.2|
