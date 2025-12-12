@@ -7,8 +7,6 @@ use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering;
 use std::task::Poll;
 
-#[cfg(not(target_arch = "wasm32"))]
-use async_compat::CompatExt;
 use bevy_tasks::ConditionalSend;
 use bevy_tasks::ConditionalSendFuture;
 use futures::task::AtomicWaker;
@@ -93,10 +91,7 @@ where
             let waker = waker.clone();
             let received = received.clone();
             async move {
-                #[cfg(target_arch = "wasm32")]
                 let result = self.fut.await;
-                #[cfg(not(target_arch = "wasm32"))]
-                let result = self.fut.compat().await;
 
                 if let Ok(()) = tx.send(result) {
                     // Wait for the receiver to get the result before dropping.
@@ -193,10 +188,7 @@ where
             let waker = waker.clone();
             let received = received.clone();
             async move {
-                #[cfg(target_arch = "wasm32")]
                 let result = timeout(self.timeout, self.fut).await;
-                #[cfg(not(target_arch = "wasm32"))]
-                let result = timeout(self.timeout, self.fut.compat()).await;
 
                 if let Ok(()) = tx.send(result) {
                     // Wait for the receiver to get the result before dropping.
