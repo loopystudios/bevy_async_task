@@ -27,8 +27,8 @@ where
         self.0.is_none()
     }
 
-    /// Returns whether the stream is active (started but not finished).
-    pub fn is_active(&self) -> bool {
+    /// Returns whether the stream is pending (running, but not finished).
+    pub fn is_pending(&self) -> bool {
         if let Some(rx) = &self.0 {
             !rx.is_finished()
         } else {
