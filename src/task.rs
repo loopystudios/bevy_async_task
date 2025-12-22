@@ -9,8 +9,8 @@ use std::task::Poll;
 
 use bevy_tasks::ConditionalSend;
 use bevy_tasks::ConditionalSendFuture;
+use futures::channel::oneshot;
 use futures::task::AtomicWaker;
-use tokio::sync::oneshot;
 
 use crate::AsyncReceiver;
 use crate::error::TimeoutError;

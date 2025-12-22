@@ -61,8 +61,6 @@ clippy.wildcard_dependencies = "warn"
 [lib]
 
 [dependencies]
-tokio = { version = "1.48.0", default-features = false, features = ["sync"] }
-
 bevy_ecs = { version = "0.17.3", default-features = false, features = [
   "multi_threaded",
   "async_executor",
