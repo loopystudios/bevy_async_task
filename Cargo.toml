@@ -10,7 +10,7 @@ repository = "https://github.com/loopystudios/bevy_async_task"
 authors = ["Spencer C. Imbleau"]
 keywords = ["gamedev", "async"]
 categories = ["game-development", "asynchronous"]
-version = "0.11.0"
+version = "0.11.1"
 edition = "2024"
 
 [lints]
