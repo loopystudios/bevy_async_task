@@ -9,8 +9,9 @@ use bevy_tasks::ConditionalSendFuture;
 use bevy_tasks::futures_lite::Stream;
 use bevy_tasks::futures_lite::StreamExt;
 use bevy_tasks::futures_lite::stream;
+use futures::SinkExt;
+use futures::channel::mpsc;
 use futures::task::AtomicWaker;
-use tokio::sync::mpsc;
 
 use crate::ConditionalSendStream;
 use crate::receiver::AsyncStreamReceiver;
@@ -59,7 +60,7 @@ impl<T: ConditionalSend + 'static> AsyncStream<T> {
         impl ConditionalSendFuture<Output = ()>,
         AsyncStreamReceiver<T>,
     ) {
-        let (tx, rx) = mpsc::unbounded_channel();
+        let (mut tx, rx) = mpsc::unbounded();
         let finished = Arc::new(AtomicBool::new(false));
         let finished_clone = Arc::clone(&finished);
         let waker = Arc::new(AtomicWaker::new());
@@ -69,8 +70,9 @@ impl<T: ConditionalSend + 'static> AsyncStream<T> {
 
         let fut = async move {
             let mut stream = self.stream;
+
             while let Some(item) = stream.next().await {
-                if tx.send(item).is_err() {
+                if tx.send(item).await.is_err() {
                     // Receiver dropped, exit early
                     break;
                 }

@@ -61,8 +61,6 @@ clippy.wildcard_dependencies = "warn"
 [lib]
 
 [dependencies]
-tokio = { version = "1.48.0", default-features = false, features = ["sync"] }
-
 bevy_ecs = { version = "0.17.3", default-features = false, features = [
   "multi_threaded",
   "async_executor",
@@ -84,6 +82,7 @@ bevy = { version = "0.17.3", default-features = false, features = [
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 futures-timer = "3.0.3"
+async-compat = "0.2.5"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 futures-timer = { version = "3.0.3", features = ["wasm-bindgen"] }

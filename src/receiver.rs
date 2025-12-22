@@ -2,9 +2,9 @@ use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering;
 
+use futures::channel::mpsc;
+use futures::channel::oneshot;
 use futures::task::AtomicWaker;
-use tokio::sync::mpsc;
-use tokio::sync::oneshot::{self};
 
 /// A channel that catches an [`AsyncTask`](crate::AsyncTask) result.
 #[derive(Debug)]
@@ -18,13 +18,13 @@ impl<T> AsyncReceiver<T> {
     /// Poll the current thread waiting for the async result.
     pub fn try_recv(&mut self) -> Option<T> {
         match self.receiver.try_recv() {
-            Ok(t) => {
+            Ok(Some(t)) => {
                 self.receiver.close();
                 self.received.store(true, Ordering::Relaxed);
                 self.waker.wake(); // Wake the sender to drop
                 Some(t)
             }
-            Err(_) => None,
+            Ok(None) | Err(_) => None,
         }
     }
 }
@@ -41,16 +41,20 @@ pub struct AsyncStreamReceiver<T> {
 impl<T> AsyncStreamReceiver<T> {
     /// Returns whether the stream has finished producing items.
     pub fn is_finished(&self) -> bool {
-        self.finished.load(Ordering::Relaxed) && self.receiver.is_empty()
+        self.finished.load(Ordering::Relaxed)
     }
 
     /// Try to receive the next item from the stream without blocking.
     /// Returns `Some(item)` if an item is available, `None` otherwise.
     pub fn try_recv(&mut self) -> Option<T> {
-        match self.receiver.try_recv() {
-            Ok(item) => Some(item),
+        match self.receiver.try_next() {
+            Ok(Some(item)) => Some(item),
             Err(_) => {
-                // Check if we're truly finished (no more items will come)
+                // No message yet, and sender is not dropped.
+                None
+            }
+            Ok(None) => {
+                // Sender is closed, stream exhausted
                 if self.finished.load(Ordering::Relaxed) {
                     // Signal to the producer that we're done
                     self.received.store(true, Ordering::Relaxed);
