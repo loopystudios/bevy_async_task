@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - This release supports **Bevy 0.17**.
 
+## [0.11.1] - 2025-12-21
+
+- This release supports **Bevy 0.17**.
+
+### Fixed
+
+- Removed the need for tokio channels internally to reduce dependency graph
+- Re-applied `async-compat` to native futures due to tokio reactor conflicts on native (particularly with reqwest).
+
 ## [0.11.0] - 2025-12-12
 
 - This release supports **Bevy 0.17**.
