@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - This release supports **Bevy 0.17**.
 
+### Fixed
+
+- `TimeoutError` is now `Clone` and `Copy`
+
 ## [0.11.1] - 2025-12-21
 
 - This release supports **Bevy 0.17**.
