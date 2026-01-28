@@ -10,7 +10,7 @@ repository = "https://github.com/loopystudios/bevy_async_task"
 authors = ["Spencer C. Imbleau"]
 keywords = ["gamedev", "async"]
 categories = ["game-development", "asynchronous"]
-version = "0.11.1"
+version = "0.12.0"
 edition = "2024"
 
 [lints]
@@ -61,21 +61,21 @@ clippy.wildcard_dependencies = "warn"
 [lib]
 
 [dependencies]
-bevy_ecs = { version = "0.17.3", default-features = false, features = [
+bevy_ecs = { version = "0.18", default-features = false, features = [
   "multi_threaded",
   "async_executor",
 ] }
-bevy_tasks = { version = "0.17.3", default-features = false, features = [
+bevy_tasks = { version = "0.18", default-features = false, features = [
   "async_executor",
 ] }
-bevy_platform = { version = "0.17.3", default-features = false }
+bevy_platform = { version = "0.18", default-features = false }
 
 thiserror = "2.0.17"
 futures = "0.3.31"
 web-time = "1.1.0"
 
 [dev-dependencies]
-bevy = { version = "0.17.3", default-features = false, features = [
+bevy = { version = "0.18", default-features = false, features = [
   "multi_threaded",
   "bevy_log",
 ] }
