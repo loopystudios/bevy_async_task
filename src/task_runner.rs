@@ -1,7 +1,7 @@
 use std::sync::atomic::Ordering;
 use std::task::Poll;
 
-use bevy_ecs::component::Tick;
+use bevy_ecs::change_detection::Tick;
 use bevy_ecs::system::ExclusiveSystemParam;
 use bevy_ecs::system::ReadOnlySystemParam;
 use bevy_ecs::system::SystemMeta;
