@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- This release supports **Bevy 0.17**.
+- This release supports **Bevy 0.18**.
 
 ### Fixed
 
